@@ -6,14 +6,30 @@ This SDK is a JavaScript library for selling and buying on X2Y2, so you don't ne
 
 The SDK requires an X2Y2 API Key. You can request one from the [Developer Hub](https://discord.gg/YhXfARtEmA).
 
+### Install
+
+This package has peer dependencies on `etherjs` and `axios`.
+
+Install with
+
+```bash
+yarn add @x2y2-io/sdk ethers axios
+```
+
+or
+
+```bash
+npm install @x2y2-io/sdk ethers axios --save
+```
+
 ### Initiating SDK
 
 Call `init` with your API Key and then initiate an `ethers.Signer` instance to interact with user's wallet:
 
 ```JavaScript
 import { Signer } from 'ethers'
-import { ethersWallet, init } from 'x2y2-js'
-import { Network } from 'x2y2-js/network'
+import { ethersWallet, init } from '@x2y2-io/sdk'
+import { Network } from '@x2y2-io/sdk/network'
 
 init(YOUR_API_KEY)
 

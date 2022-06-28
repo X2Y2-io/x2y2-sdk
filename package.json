@@ -32,7 +32,7 @@
     "singleQuote": true,
     "trailingComma": "es5"
   },
-  "name": "x2y2-sdk",
+  "name": "@x2y2-io/sdk",
   "author": "x2y2",
   "module": "dist/x2y2-sdk.esm.js",
   "size-limit": [
@@ -61,5 +61,11 @@
   "dependencies": {
     "axios": "^0.27.2",
     "ethers": "^5.6.8"
+  },
+  "keywords": [
+    "x2y2"
+  ],
+  "publishConfig": {
+    "access": "public"
   }
 }
