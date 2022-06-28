@@ -8,18 +8,16 @@ The SDK requires an X2Y2 API Key. You can request one from the [Developer Hub](h
 
 ### Install
 
-This package has peer dependencies on `etherjs` and `axios`.
-
 Install with
 
 ```bash
-yarn add @x2y2-io/sdk ethers axios
+yarn add @x2y2-io/sdk
 ```
 
 or
 
 ```bash
-npm install @x2y2-io/sdk ethers axios --save
+npm install @x2y2-io/sdk --save
 ```
 
 ### Initiating SDK
