@@ -46,12 +46,17 @@ describe('x2y2', () => {
   })
 
   it('cancelList', async () => {
-    await cancelList({
-      network,
-      signer: seller,
-      tokenAddress,
-      tokenId,
-    })
+    await cancelList(
+      {
+        network,
+        signer: seller,
+        tokenAddress,
+        tokenId,
+      },
+      {
+        maxFeePerGas: ethers.utils.parseUnits('10', 'gwei'),
+      }
+    )
     await sleep(60000)
   })
 
@@ -80,7 +85,7 @@ describe('x2y2', () => {
   it('offer', async () => {
     await offer({
       network,
-      signer: buyer,
+      signer: seller,
       isCollection: false,
       tokenAddress,
       tokenId,
@@ -94,7 +99,7 @@ describe('x2y2', () => {
   it('collection offer', async () => {
     await offer({
       network,
-      signer: buyer,
+      signer: seller,
       isCollection: true,
       tokenAddress,
       tokenId: '0',

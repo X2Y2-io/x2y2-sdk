@@ -1,4 +1,4 @@
-import { BigNumber, constants, ethers, providers, Wallet } from 'ethers'
+import { BigNumber, ethers } from 'ethers'
 import { APIClient, getSharedAPIClient, initAPIClient } from './api'
 import { X2Y2R1__factory } from './contracts'
 import { getNetworkMeta, Network } from './network'
@@ -65,13 +65,16 @@ export type OfferPayload = {
   expirationTime: number
 }
 
-export function ethersWallet(privateKey: string, network: Network): Wallet {
+export function ethersWallet(
+  privateKey: string,
+  network: Network
+): ethers.Wallet {
   const networkMeta = getNetworkMeta(network)
-  const provider = new providers.StaticJsonRpcProvider(
+  const provider = new ethers.providers.StaticJsonRpcProvider(
     networkMeta.rpcUrl,
     networkMeta.id
   )
-  return new Wallet(privateKey, provider)
+  return new ethers.Wallet(privateKey, provider)
 }
 
 export function init(apiKey: string) {
@@ -110,13 +113,16 @@ export async function list({
   await getSharedAPIClient(network).postSellOrder(order)
 }
 
-export async function cancelList({
-  network,
-  signer,
+export async function cancelList(
+  {
+    network,
+    signer,
 
-  tokenAddress,
-  tokenId,
-}: CancelListPayload) {
+    tokenAddress,
+    tokenId,
+  }: CancelListPayload,
+  callOverrides: ethers.Overrides = {}
+) {
   const apiClient: APIClient = getSharedAPIClient(network)
   const accountAddress = await signer.getAddress()
 
@@ -146,7 +152,8 @@ export async function cancelList({
     input.deadline,
     input.v,
     input.r,
-    input.s
+    input.s,
+    callOverrides
   )
   return tx
 }
@@ -155,7 +162,8 @@ export async function buyOrder(
   network: Network,
   signer: ethers.Signer,
 
-  order: Order
+  order: Order,
+  callOverrides: ethers.Overrides = {}
 ) {
   const apiClient: APIClient = getSharedAPIClient(network)
   const accountAddress = await signer.getAddress()
@@ -168,7 +176,7 @@ export async function buyOrder(
     order.price
   )
   // check
-  let value: BigNumber = constants.Zero
+  let value: BigNumber = ethers.constants.Zero
   let valid = false
   if (runInput && runInput.orders.length && runInput.details.length) {
     valid = true
@@ -177,7 +185,10 @@ export async function buyOrder(
       const orderItem = order?.items[(detail.itemIdx as BigNumber).toNumber()]
       if (detail.op !== OP_COMPLETE_SELL_OFFER || !orderItem) {
         valid = false
-      } else if (!order.currency || order.currency === constants.AddressZero) {
+      } else if (
+        !order.currency ||
+        order.currency === ethers.constants.AddressZero
+      ) {
         value = value.add(detail.price)
       }
     })
@@ -188,25 +199,28 @@ export async function buyOrder(
   // Invoke smart contract run
   const marketContract = getNetworkMeta(network).marketContract
   const market = X2Y2R1__factory.connect(marketContract, signer)
-  const tx = await market.run(runInput, { value })
+  const tx = await market.run(runInput, { ...callOverrides, value })
   return tx
 }
 
-export async function buy({
-  network,
-  signer,
+export async function buy(
+  {
+    network,
+    signer,
 
-  tokenAddress,
-  tokenId,
-  price,
-}: BuyPayload) {
+    tokenAddress,
+    tokenId,
+    price,
+  }: BuyPayload,
+  callOverrides: ethers.Overrides = {}
+) {
   const order: Order | undefined = await getSharedAPIClient(
     network
   ).getSellOrder('', tokenAddress, tokenId)
 
   if (!order || order.price !== price) throw new Error('No order found')
 
-  return await buyOrder(network, signer, order)
+  return await buyOrder(network, signer, order, callOverrides)
 }
 
 export async function offer({

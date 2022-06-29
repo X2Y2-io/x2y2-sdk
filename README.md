@@ -57,13 +57,6 @@ await offer({
 To creat a fixed-price listing for a single item, call the `list` method.
 
 ```JavaScript
-// Token ID and smart contract address for a non-fungible token:
-const tokenAddress: string = CONTRACT_ADDRESS
-const tokenId: string = TOKEN_ID
-
-const price: string = '1000000000000000000' // 1 WETH
-const expirationTime: number = Math.round(Date.now() / 1000) + 30 * 86400 // 30 days
-
 await list({
   network,
   signer: seller, // Signer of the seller
@@ -84,6 +77,10 @@ await cancelList({
   signer: seller, // Signer of the seller
   tokenAddress, // string, contract address of NFT collection
   tokenId, // string, token ID of the NFT
+},
+// Optional ethers.Overrides(gasLimit, gasPrice, maxFeePerGas, maxPriorityFeePerGas...)
+{
+  maxFeePerGas: ethers.utils.parseUnits('10', 'gwei'), // 10 gei
 })
 ```
 
@@ -98,6 +95,10 @@ await buy({
   tokenAddress, // string, contract address of NFT collection
   tokenId, // string, token ID of the NFT
   price, // string, the price of an existing listing order, eg. '1000000000000000000' for 1 WETH
+},
+// Optional ethers.Overrides(gasLimit, gasPrice, maxFeePerGas, maxPriorityFeePerGas...)
+{
+  maxFeePerGas: ethers.utils.parseUnits('10', 'gwei'), // 10 gei
 })
 ```
 
