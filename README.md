@@ -80,7 +80,7 @@ await cancelList({
 },
 // Optional ethers.Overrides(gasLimit, gasPrice, maxFeePerGas, maxPriorityFeePerGas...)
 {
-  maxFeePerGas: ethers.utils.parseUnits('10', 'gwei'), // 10 gei
+  maxFeePerGas: ethers.utils.parseUnits('10', 'gwei'), // 10 gwei
 })
 ```
 
@@ -98,7 +98,7 @@ await buy({
 },
 // Optional ethers.Overrides(gasLimit, gasPrice, maxFeePerGas, maxPriorityFeePerGas...)
 {
-  maxFeePerGas: ethers.utils.parseUnits('10', 'gwei'), // 10 gei
+  maxFeePerGas: ethers.utils.parseUnits('10', 'gwei'), // 10 gwei
 })
 ```
 
