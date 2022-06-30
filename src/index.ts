@@ -65,6 +65,21 @@ export type OfferPayload = {
   expirationTime: number
 }
 
+export type CancelOfferPayload = {
+  network: Network
+  signer: ethers.Signer
+
+  orderId: number
+}
+
+export type AcceptOfferPayload = {
+  network: Network
+  signer: ethers.Signer
+
+  orderId: number
+  tokenId: string | undefined
+}
+
 export function ethersWallet(
   privateKey: string,
   network: Network
@@ -113,6 +128,40 @@ export async function list({
   await getSharedAPIClient(network).postSellOrder(order)
 }
 
+async function cancelOrder(
+  network: Network,
+  signer: ethers.Signer,
+
+  orderId: number,
+  callOverrides: ethers.Overrides = {}
+) {
+  const apiClient: APIClient = getSharedAPIClient(network)
+  const accountAddress = await signer.getAddress()
+
+  const signMessage = ethers.utils.keccak256('0x')
+  const sign = await signer.signMessage(ethers.utils.arrayify(signMessage))
+  const input: CancelInput = await apiClient.getCancelInput(
+    accountAddress,
+    OP_CANCEL_OFFER,
+    orderId,
+    signMessage,
+    sign
+  )
+
+  // Invoke smart contract cancel
+  const marketContract = getNetworkMeta(network).marketContract
+  const market = X2Y2R1__factory.connect(marketContract, signer)
+  const tx = await market.cancel(
+    input.itemHashes,
+    input.deadline,
+    input.v,
+    input.r,
+    input.s,
+    callOverrides
+  )
+  return tx
+}
+
 export async function cancelList(
   {
     network,
@@ -134,35 +183,18 @@ export async function cancelList(
 
   if (!order) throw new Error('No order found')
 
-  const signMessage = ethers.utils.keccak256('0x')
-  const sign = await signer.signMessage(ethers.utils.arrayify(signMessage))
-  const input: CancelInput = await apiClient.getCancelInput(
-    accountAddress,
-    OP_CANCEL_OFFER,
-    order.id,
-    signMessage,
-    sign
-  )
-
-  // Invoke smart contract cancel
-  const marketContract = getNetworkMeta(network).marketContract
-  const market = X2Y2R1__factory.connect(marketContract, signer)
-  const tx = await market.cancel(
-    input.itemHashes,
-    input.deadline,
-    input.v,
-    input.r,
-    input.s,
-    callOverrides
-  )
-  return tx
+  return await cancelOrder(network, signer, order.id, callOverrides)
 }
 
-export async function buyOrder(
+async function acceptOrder(
   network: Network,
   signer: ethers.Signer,
 
-  order: Order,
+  op: number,
+  orderId: number,
+  currency: string,
+  price: string,
+  tokenId: string,
   callOverrides: ethers.Overrides = {}
 ) {
   const apiClient: APIClient = getSharedAPIClient(network)
@@ -170,10 +202,11 @@ export async function buyOrder(
 
   const runInput: RunInput | undefined = await apiClient.fetchOrderSign(
     accountAddress,
-    OP_COMPLETE_SELL_OFFER,
-    order.id,
-    order.currency,
-    order.price
+    op,
+    orderId,
+    currency,
+    price,
+    tokenId
   )
   // check
   let value: BigNumber = ethers.constants.Zero
@@ -183,11 +216,11 @@ export async function buyOrder(
     runInput.details.forEach(detail => {
       const order = runInput.orders[(detail.orderIdx as BigNumber).toNumber()]
       const orderItem = order?.items[(detail.itemIdx as BigNumber).toNumber()]
-      if (detail.op !== OP_COMPLETE_SELL_OFFER || !orderItem) {
+      if (detail.op !== op || !orderItem) {
         valid = false
       } else if (
-        !order.currency ||
-        order.currency === ethers.constants.AddressZero
+        (!order.currency || order.currency === ethers.constants.AddressZero) &&
+        op === OP_COMPLETE_SELL_OFFER
       ) {
         value = value.add(detail.price)
       }
@@ -220,7 +253,16 @@ export async function buy(
 
   if (!order || order.price !== price) throw new Error('No order found')
 
-  return await buyOrder(network, signer, order, callOverrides)
+  return await acceptOrder(
+    network,
+    signer,
+    OP_COMPLETE_SELL_OFFER,
+    order.id,
+    order.currency,
+    order.price,
+    '',
+    callOverrides
+  )
 }
 
 export async function offer({
@@ -261,4 +303,42 @@ export async function offer({
   }
   await signBuyOffer(signer, order)
   await getSharedAPIClient(network).postBuyOffer(order, isCollection)
+}
+
+export async function cancelOffer(
+  {
+    network,
+    signer,
+
+    orderId,
+  }: CancelOfferPayload,
+  callOverrides: ethers.Overrides = {}
+) {
+  if (!orderId) throw new Error('Invalid orderId')
+
+  return await cancelOrder(network, signer, orderId, callOverrides)
+}
+
+export async function acceptOffer(
+  {
+    network,
+    signer,
+
+    orderId,
+    tokenId,
+  }: AcceptOfferPayload,
+  callOverrides: ethers.Overrides = {}
+) {
+  if (!orderId) throw new Error('Invalid orderId')
+
+  return await acceptOrder(
+    network,
+    signer,
+    OP_COMPLETE_BUY_OFFER,
+    orderId,
+    '0x',
+    '0',
+    tokenId ?? '',
+    callOverrides
+  )
 }
