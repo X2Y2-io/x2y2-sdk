@@ -37,7 +37,7 @@ const signer: Signer = ethersWallet(WALLET_PRIVATE_KEY, network)
 
 ### Making Offers / Collection Offers
 
-To make an buy offer, call the `offer` method. Set the `isCollection` to `true` and `tokenId` to a empty string to make an collection offer.
+To make a buy offer, call the `offer` method. Set the `isCollection` to `true` and `tokenId` to a empty string to make a collection offer.
 
 ```JavaScript
 await offer({
@@ -69,7 +69,7 @@ await list({
 
 ### Cancel listing
 
-To cancel a listing , call the `cancelList` method.
+To cancel a listing, call the `cancelList` method.
 
 ```JavaScript
 await cancelList({
@@ -77,10 +77,6 @@ await cancelList({
   signer: seller, // Signer of the seller
   tokenAddress, // string, contract address of NFT collection
   tokenId, // string, token ID of the NFT
-},
-// Optional ethers.Overrides(gasLimit, gasPrice, maxFeePerGas, maxPriorityFeePerGas...)
-{
-  maxFeePerGas: ethers.utils.parseUnits('10', 'gwei'), // 10 gwei
 })
 ```
 
@@ -95,8 +91,41 @@ await buy({
   tokenAddress, // string, contract address of NFT collection
   tokenId, // string, token ID of the NFT
   price, // string, the price of an existing listing order, eg. '1000000000000000000' for 1 WETH
+})
+```
+
+### Cancel offer
+
+To cancel a buy offer or a collection offer, call the `cancelOffer` method.
+
+```JavaScript
+await cancelOffer({
+  network,
+  signer: buyer, // Signer of the buyer
+  orderId, // number, id of the offer
+})
+```
+
+### Accept offer
+
+To accept a buy offer or a collection offer, call the `acceptOffer` method.
+
+```JavaScript
+await acceptOffer({
+  network,
+  signer: buyer, // Signer of the buyer
+  orderId, // number, id of the offer
+  tokenId, // string | undefined, token ID of your NFT, only necessary when accepting a collection offer
+})
+```
+
+## Overriding Gas
+
+For methods that submit transactions like `cancelList`, `buy`, `cancelOffer` and `acceptOffer`, it's possible to overrides ethers variables like `gasLimit`, `gasPrice`, `maxFeePerGas`, `maxPriorityFeePerGas`, etc.
+
+```JavaScript
+await acceptOffer({
 },
-// Optional ethers.Overrides(gasLimit, gasPrice, maxFeePerGas, maxPriorityFeePerGas...)
 {
   maxFeePerGas: ethers.utils.parseUnits('10', 'gwei'), // 10 gwei
 })

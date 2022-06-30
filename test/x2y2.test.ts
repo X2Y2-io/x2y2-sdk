@@ -1,5 +1,14 @@
-import { Signer } from 'ethers'
-import { buy, cancelList, ethersWallet, init, list, offer } from '../src/index'
+import { ethers, Signer } from 'ethers'
+import {
+  acceptOffer,
+  buy,
+  cancelList,
+  cancelOffer,
+  ethersWallet,
+  init,
+  list,
+  offer,
+} from '../src/index'
 import { Network } from '../src/network'
 
 jest.setTimeout(120_000)
@@ -106,6 +115,30 @@ describe('x2y2', () => {
       currency: weth,
       price,
       expirationTime,
+    })
+    await sleep(1000)
+  })
+
+  it('cancelOffer', async () => {
+    await cancelOffer(
+      {
+        network,
+        signer: seller,
+        orderId: 1,
+      },
+      {
+        maxFeePerGas: ethers.utils.parseUnits('10', 'gwei'),
+      }
+    )
+    await sleep(60000)
+  })
+
+  it('acceptOffer', async () => {
+    await acceptOffer({
+      network,
+      signer: buyer,
+      orderId: 2,
+      tokenId,
     })
     await sleep(1000)
   })

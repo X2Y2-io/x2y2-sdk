@@ -83,9 +83,7 @@ export class APIClient {
       maker,
       contract: tokenAddress,
       token_id: tokenId,
-    }
-    if (this.network !== 'mainnet') {
-      params['network_id'] = getNetworkMeta(this.network).id.toString()
+      network_id: getNetworkMeta(this.network).id.toString(),
     }
     const { data } = await this._get('/v1/orders', params)
     return data instanceof Array && data.length > 0
@@ -115,14 +113,15 @@ export class APIClient {
     op: number,
     orderId: number,
     currency: string,
-    price: string
+    price: string,
+    tokenId: string
   ): Promise<RunInput | undefined> {
     const { data } = await this._post('/api/orders/sign', {
       caller,
       op,
       amountToEth: '0',
       amountToWeth: '0',
-      items: [{ orderId, currency, price }],
+      items: [{ orderId, currency, price, tokenId }],
     })
     const inputData = (data ?? []) as { order_id: number; input: string }[]
     const input = inputData.find(d => d.order_id === orderId)
