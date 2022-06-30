@@ -77,10 +77,6 @@ await cancelList({
   signer: seller, // Signer of the seller
   tokenAddress, // string, contract address of NFT collection
   tokenId, // string, token ID of the NFT
-},
-// Optional ethers.Overrides(gasLimit, gasPrice, maxFeePerGas, maxPriorityFeePerGas...)
-{
-  maxFeePerGas: ethers.utils.parseUnits('10', 'gwei'), // 10 gwei
 })
 ```
 
@@ -95,10 +91,6 @@ await buy({
   tokenAddress, // string, contract address of NFT collection
   tokenId, // string, token ID of the NFT
   price, // string, the price of an existing listing order, eg. '1000000000000000000' for 1 WETH
-},
-// Optional ethers.Overrides(gasLimit, gasPrice, maxFeePerGas, maxPriorityFeePerGas...)
-{
-  maxFeePerGas: ethers.utils.parseUnits('10', 'gwei'), // 10 gwei
 })
 ```
 
@@ -111,10 +103,6 @@ await cancelOffer({
   network,
   signer: buyer, // Signer of the buyer
   orderId, // number, id of the offer
-},
-// Optional ethers.Overrides(gasLimit, gasPrice, maxFeePerGas, maxPriorityFeePerGas...)
-{
-  maxFeePerGas: ethers.utils.parseUnits('10', 'gwei'), // 10 gwei
 })
 ```
 
@@ -128,8 +116,16 @@ await acceptOffer({
   signer: buyer, // Signer of the buyer
   orderId, // number, id of the offer
   tokenId, // string | undefined, token ID of your NFT, only necessary when accepting a collection offer
+})
+```
+
+## Overriding Gas
+
+For methods that submit transactions like `cancelList`, `buy`, `cancelOffer` and `acceptOffer`, it's possible to overrides ethers variables like `gasLimit`, `gasPrice`, `maxFeePerGas`, `maxPriorityFeePerGas`, etc.
+
+```JavaScript
+await acceptOffer({
 },
-// Optional ethers.Overrides(gasLimit, gasPrice, maxFeePerGas, maxPriorityFeePerGas...)
 {
   maxFeePerGas: ethers.utils.parseUnits('10', 'gwei'), // 10 gwei
 })
