@@ -48,7 +48,7 @@ await offer({
   tokenId, // string, token ID of the NFT, use empty string for collection offer
   currency: weth, // string, contract address of WETH, '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
   price, // string, eg. '1000000000000000000' for 1 WETH
-  expirationTime, // number, the duration of offer, in seconds.
+  expirationTime, // number, the unix timestamp when the listing will expire, in seconds
 })
 ```
 
@@ -63,7 +63,7 @@ await list({
   tokenAddress, // string, contract address of NFT collection
   tokenId, // string, token ID of the NFT
   price, // string, eg. '1000000000000000000' for 1 WETH
-  expirationTime, // number, the duration for listing, in seconds.
+  expirationTime, // number, the unix timestamp when the listing will expire, in seconds
 })
 ```
 
@@ -130,6 +130,18 @@ await acceptOffer({
   maxFeePerGas: ethers.utils.parseUnits('10', 'gwei'), // 10 gwei
 })
 ```
+
+## Error Codes of API Response
+
+- 3002: intention sig error
+- 3004: currency error(currently ETH for sell orders only)
+- 2028: contract/nft not allowed to trade(rug or hacked nft)
+- 2012: nft listing order already exist
+- 1006: user banned from listing(rug/hacker address)
+- 2020: order cancelled
+- 2021: order purchased
+- 2028: contract/nft not allowed to trade(rug or hacked nft)
+- 2030: order expired
 
 ## Contributing
 
