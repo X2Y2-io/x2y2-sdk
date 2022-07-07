@@ -133,15 +133,17 @@ await acceptOffer({
 
 ## Error Codes of API Response
 
-- 3002: intention sig error
-- 3004: currency error(currently ETH for sell orders only)
-- 2028: contract/nft not allowed to trade(rug or hacked nft)
-- 2012: nft listing order already exist
-- 1006: user banned from listing(rug/hacker address)
-- 2020: order cancelled
-- 2021: order purchased
-- 2028: contract/nft not allowed to trade(rug or hacked nft)
-- 2030: order expired
+| Error Code | Reason                                                       |
+| :--------- | :----------------------------------------------------------- |
+| 1006       | User banned from listing(rug/hacker address)                 |
+| 2012       | A listing order for the NFT already exists                   |
+| 2020       | Order already cancelled                                      |
+| 2021       | Order already purchased                                      |
+| 2028       | Contract/NFT is not allowed to trade(rug or hacked NFT)      |
+| 2030       | Order already expired                                        |
+| 3002       | Signature error                                              |
+| 3004       | Wrong currency(currently only ETH supported for sell orders) |
+| 3007       | Invalid API key                                              |
 
 ## Contributing
 
