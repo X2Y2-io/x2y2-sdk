@@ -27,7 +27,7 @@ Call `init` with your API Key and then initiate an `ethers.Signer` instance to i
 ```JavaScript
 import { Signer } from 'ethers'
 import { ethersWallet, init } from '@x2y2-io/sdk'
-import { Network } from '@x2y2-io/sdk/network'
+import { Network } from '@x2y2-io/sdk/dist/network'
 
 init(YOUR_API_KEY)
 
