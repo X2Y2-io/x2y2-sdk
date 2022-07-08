@@ -37,9 +37,19 @@ const network: Network = 'mainnet'
 const signer: Signer = ethersWallet(WALLET_PRIVATE_KEY, network)
 ```
 
+##Gasless Methods
+
+X2Y2 allows you to list items for sale and make WETH offers on others' items without having to send separate transactions each time. This is achieved by first sending one-off approval transactions that enable X2Y2 to:
+1. transfer your items from a specific collection (if you are listing them for sale)
+2. spend your WETH (if you are making offers)
+
+Once X2Y2 has the necessary approvals, you can list items for sale and make WETH offers by signing messages with your wallet. The SDK supports both of these functionalities and abstracts away the creation of signatures:
+
 ### Making Offers / Collection Offers
 
-To make a buy offer, call the `offer` method. Set `isCollection` to `true` and `tokenId` to a empty string to make a collection offer.
+*Before making offers, you must approve WETH spending by the X2Y2: Exchange contract `0x74312363e45DCaBA76c59ec49a7Aa8A65a67EeD3`*
+
+To make an offer on an item, call the `offer` method. Set `isCollection` to `true` and `tokenId` to a empty string to make a collection offer.
 
 ```JavaScript
 await offer({
@@ -60,7 +70,7 @@ Note: As of v0.1.4, this method will throw an `Error: Bad request` if the signer
 
 ### Creating Listings (Orders)
 
-To create a fixed-price listing to sell an item, also known as an order, call the `list` method.
+To create a fixed-price listing to sell an item, also referred to as an order in the API, call the `list` method.
 
 ```JavaScript
 await list({
@@ -72,6 +82,8 @@ await list({
   expirationTime, // number, the unix timestamp when the listing will expire, in seconds. Must be at least 15 minutes later in the future.
 })
 ```
+
+##Transactional Methods
 
 ### Cancel listing
 
