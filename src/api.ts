@@ -44,7 +44,8 @@ export class APIClient {
   }
 
   async _handleResponse(resp: AxiosResponse<any, any>) {
-    if (resp.status !== 200) throw new Error('bad response')
+    if (![200, 400, 429].includes(resp.status)) throw new Error('bad response')
+    if (resp.status === 429) throw new Error('rate limit')
     const respData = JSON.parse(resp.data)
     if (!respData || !respData.success) {
       const errors = respData?.errors
@@ -76,6 +77,21 @@ export class APIClient {
 
   async postBuyOffer(order: X2Y2Order, isCollection: boolean) {
     return await this._postX2Y2Order(order, isCollection)
+  }
+
+  async postLowerPrice(order: X2Y2Order, orderId: number) {
+    return await this._post('/api/orders/add', {
+      order: encodeOrder(order),
+      isBundle: false,
+      bundleName: '',
+      bundleDesc: '',
+      orderIds: [orderId],
+      royalties: [],
+      changePrice: true,
+      isCollection: false,
+      isPrivate: false,
+      taker: null,
+    })
   }
 
   async getSellOrder(maker: string, tokenAddress: string, tokenId: string) {
