@@ -66,7 +66,7 @@ await offer({
 
 At present X2Y2 only supports making offers in WETH.
 
-To make a collection offer, set `isCollection` to `true` and `tokenId` to a empty string to make a collection offer.
+To make a collection offer, set `isCollection` to `true` and `tokenId` to an empty string.
 
 Note: As of v0.1.4, this method will throw an `Error: Bad request` if the signer does not have sufficient WETH for the offer they are making. 
 
