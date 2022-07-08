@@ -39,7 +39,7 @@ const signer: Signer = ethersWallet(WALLET_PRIVATE_KEY, network)
 
 ### Making Offers / Collection Offers
 
-To make a buy offer, call the `offer` method. Set the `isCollection` to `true` and `tokenId` to a empty string to make a collection offer.
+To make a buy offer on an NFT, call the `offer` method. Set `isCollection` to `true` and `tokenId` to a empty string to make a collection offer.
 
 ```JavaScript
 await offer({
@@ -48,15 +48,17 @@ await offer({
   isCollection: false, // bool, set true for collection offer
   tokenAddress, // string, contract address of NFT collection
   tokenId, // string, token ID of the NFT, use empty string for collection offer
-  currency: weth, // string, contract address of WETH, '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+  currency: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2', // string, contract address of WETH
   price, // string, eg. '1000000000000000000' for 1 WETH
   expirationTime, // number, the unix timestamp when the listing will expire, in seconds
 })
 ```
 
+At present X2Y2 only supports making offers in WETH (`0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2`).
+
 ### Creating Listings
 
-To creat a fixed-price listing for a single item, call the `list` method.
+To create a fixed-price listing to sell an item, call the `list` method.
 
 ```JavaScript
 await list({
@@ -64,7 +66,7 @@ await list({
   signer: seller, // Signer of the seller
   tokenAddress, // string, contract address of NFT collection
   tokenId, // string, token ID of the NFT
-  price, // string, eg. '1000000000000000000' for 1 WETH
+  price, // string, sale price in wei eg. '1000000000000000000' for 1 ETH
   expirationTime, // number, the unix timestamp when the listing will expire, in seconds. Must be at least 15 minutes later in the future.
 })
 ```
@@ -92,7 +94,7 @@ await lowerPrice({
   signer: seller, // Signer of the seller
   tokenAddress, // string, contract address of NFT collection
   tokenId, // string, token ID of the NFT
-  price, // string, eg. '1000000000000000000' for 1 WETH. Must be lower than the current price.
+  price, // string, sale price in wei eg. '1000000000000000000' for 1 ETH. Must be lower than the current price.
   expirationTime, // number, the unix timestamp when the listing will expire, in seconds. Optional. Must be at least 15 minutes later in the future. If the current order is going to expire within 15 minutes, then a new expirationTime must be provided.
 })
 ```
@@ -107,7 +109,7 @@ await buy({
   signer: buyer, // Signer of the buyer
   tokenAddress, // string, contract address of NFT collection
   tokenId, // string, token ID of the NFT
-  price, // string, the price of an existing listing order, eg. '1000000000000000000' for 1 WETH
+  price, // string, sale price in wei eg. '1000000000000000000' for 1 ETH
 })
 ```
 
