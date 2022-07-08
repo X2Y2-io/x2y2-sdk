@@ -7,6 +7,7 @@ import {
   ethersWallet,
   init,
   list,
+  lowerPrice,
   offer,
 } from '../src/index'
 import { Network } from '../src/network'
@@ -27,6 +28,7 @@ describe('x2y2', () => {
   const tokenAddress: string = '0x4490aE41c1814f4f810a0Dd3022306eF6465F842'
   const tokenId: string = '14'
   const price: string = '20000000000000000'
+  const newPrice: string = '10000000000000000'
   const expirationTime: number =
     Math.round(Date.now() / 1000) + 30 * 24 * 60 * 60
 
@@ -49,6 +51,18 @@ describe('x2y2', () => {
       tokenAddress,
       tokenId,
       price,
+      expirationTime,
+    })
+    await sleep(5000)
+  })
+
+  it('lowerPrice', async () => {
+    await lowerPrice({
+      network,
+      signer: seller,
+      tokenAddress,
+      tokenId,
+      price: newPrice,
       expirationTime,
     })
     await sleep(5000)

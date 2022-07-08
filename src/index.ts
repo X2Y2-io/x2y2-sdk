@@ -80,6 +80,16 @@ export type AcceptOfferPayload = {
   tokenId: string | undefined
 }
 
+export type LowerPricePayload = {
+  network: Network
+  signer: ethers.Signer
+
+  tokenAddress: string
+  tokenId: string
+  price: string
+  expirationTime?: number | undefined
+}
+
 export function ethersWallet(
   privateKey: string,
   network: Network
@@ -96,6 +106,33 @@ export function init(apiKey: string) {
   initAPIClient(apiKey)
 }
 
+function makeSellOrder(
+  network: Network,
+  user: string,
+  expirationTime: number,
+  items: { price: string; data: string }[]
+) {
+  if (expirationTime < Math.round(Date.now() / 1000) + 900) {
+    throw new Error('The expiration time has to be 15 minutes later.')
+  }
+  const salt = randomSalt()
+  return {
+    salt,
+    user,
+    network: getNetworkMeta(network).id,
+    intent: INTENT_SELL,
+    delegateType: DELEGATION_TYPE_ERC721,
+    deadline: expirationTime,
+    currency: ethers.constants.AddressZero,
+    dataMask: '0x',
+    items,
+    r: '',
+    s: '',
+    v: 0,
+    signVersion: 1,
+  }
+}
+
 export async function list({
   network,
   signer,
@@ -107,23 +144,13 @@ export async function list({
 }: ListPayload): Promise<void> {
   const accountAddress = await signer.getAddress()
 
-  const salt = randomSalt()
-  const itemData = encodeItemData([{ token: tokenAddress, tokenId }])
-  const order: X2Y2Order = {
-    salt,
-    user: accountAddress,
-    network: getNetworkMeta(network).id,
-    intent: INTENT_SELL,
-    delegateType: DELEGATION_TYPE_ERC721,
-    deadline: expirationTime,
-    currency: ethers.constants.AddressZero,
-    dataMask: '0x',
-    items: [{ price, data: itemData }],
-    r: '',
-    s: '',
-    v: 0,
-    signVersion: 1,
-  }
+  const data = encodeItemData([{ token: tokenAddress, tokenId }])
+  const order: X2Y2Order = makeSellOrder(
+    network,
+    accountAddress,
+    expirationTime,
+    [{ price, data }]
+  )
   await signSellOrder(signer, order)
   await getSharedAPIClient(network).postSellOrder(order)
 }
@@ -341,4 +368,40 @@ export async function acceptOffer(
     tokenId ?? '',
     callOverrides
   )
+}
+
+export async function lowerPrice({
+  network,
+  signer,
+
+  tokenAddress,
+  tokenId,
+  price,
+  expirationTime,
+}: LowerPricePayload) {
+  const apiClient: APIClient = getSharedAPIClient(network)
+  const accountAddress = await signer.getAddress()
+
+  const list: Order | undefined = await apiClient.getSellOrder(
+    accountAddress,
+    tokenAddress,
+    tokenId
+  )
+
+  if (!list || !list.end_at) throw new Error('No order found')
+  const oldPrice = BigNumber.from(list.price)
+  const newPrice = BigNumber.from(price)
+  if (newPrice.gte(oldPrice)) {
+    throw new Error('Must be lower than the current price.')
+  }
+
+  const data = encodeItemData([{ token: tokenAddress, tokenId }])
+  const order: X2Y2Order = makeSellOrder(
+    network,
+    accountAddress,
+    expirationTime ?? parseInt(list.end_at),
+    [{ price, data }]
+  )
+  await signSellOrder(signer, order)
+  await apiClient.postLowerPrice(order, list.id)
 }
