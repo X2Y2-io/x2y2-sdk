@@ -37,7 +37,7 @@ const network: Network = 'mainnet'
 const signer: Signer = ethersWallet(WALLET_PRIVATE_KEY, network)
 ```
 
-##Gasless Methods
+## Gasless Methods
 
 X2Y2 allows you to list items for sale and make WETH offers on others' items without having to send separate transactions each time. This is achieved by first sending one-off approval transactions that enable X2Y2 to:
 1. transfer your items from a specific collection (if you are listing them for sale)
