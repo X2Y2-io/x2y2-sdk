@@ -2,7 +2,7 @@
 
 This SDK is a JavaScript library for buying and selling on X2Y2, so you don't need to interact with the X2Y2 API and smart contracts directly.
 
-If you want to get information about existings orders, offers, events, and contracts on X2Y2, [call the API directly](https://docs.x2y2.io/developers/api).
+If you just want to get information about open offers and orders on X2Y2, or see sales and other events that have taken place, [call the API directly](https://docs.x2y2.io/developers/api).
 
 ## Getting Started
 
