@@ -40,8 +40,8 @@ const signer: Signer = ethersWallet(WALLET_PRIVATE_KEY, network)
 ## Gasless Methods
 
 X2Y2 allows you to list items for sale and make WETH offers on others' items without having to send separate transactions each time. This is achieved by first sending one-off approval transactions that enable X2Y2 to:
-1. transfer your items from a specific collection (if you are listing them for sale)
-2. spend your WETH (if you are making offers)
+1. Transfer your items from a specific collection (if you are listing them for sale)
+2. Spend your WETH (if you are making offers)
 
 Once X2Y2 has the necessary approvals, you can list items for sale and make WETH offers by signing messages with your wallet. The SDK supports both of these functionalities and abstracts away the creation of signatures:
 
@@ -91,7 +91,7 @@ await list({
 
 You can think of the gasless methods previously described as "making" new offers or listings. This SDK also supports "taking" existings offers and listings: in other words, buying items that are already listed or accepting offers you have received. It also supports cancelling or modifying previous offers/listings.
 
-For each of these interactions, the signer must send a transaction. The following methods all return this transaction as an ethers [TransactionResponse](https://docs.ethers.io/v5/api/providers/types/#providers-TransactionResponse)).
+For each of these interactions, the signer must send a transaction. The following methods all return the sent transaction as an ethers [TransactionResponse](https://docs.ethers.io/v5/api/providers/types/#providers-TransactionResponse)).
 
 ### Buying
 
