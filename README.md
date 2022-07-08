@@ -80,6 +80,21 @@ await cancelList({
 })
 ```
 
+### Lower price
+
+To lower the price for a certain listing, call the `lowerPrice` method. The current order will be cancelled off-chain and a new order will be created. However, you still need to call the `/v1/orders?token_id=&contract=` [endpoint](https://x2y2-io.github.io/api-reference/#/Orders/get_v1_orders) to obtain the new order's ID.
+
+```JavaScript
+await lowerPrice({
+  network,
+  signer: seller, // Signer of the seller
+  tokenAddress, // string, contract address of NFT collection
+  tokenId, // string, token ID of the NFT
+  price, // string, eg. '1000000000000000000' for 1 WETH. Must be lower than the current price.
+  expirationTime, // number, the unix timestamp when the listing will expire, in seconds. Optional. Must be at least 15 minutes later in the future. If the current order is going to expire within 15 minutes, then a new expirationTime must be provided.
+})
+```
+
 ### Buying
 
 To purchase a fixed-price listing, call the `buy` method.
@@ -116,21 +131,6 @@ await acceptOffer({
   signer: buyer, // Signer of the buyer
   orderId, // number, id of the offer
   tokenId, // string | undefined, token ID of your NFT, only necessary when accepting a collection offer
-})
-```
-
-### Lower price
-
-To lower the price for a certain listing, call the `lowerPrice` method. The current order will be cancelled off-chain and a new order will be created. However, you still need to call `getSellOrder` method to obtain the new order's ID.
-
-```JavaScript
-await lowerPrice({
-  network,
-  signer: seller, // Signer of the seller
-  tokenAddress, // string, contract address of NFT collection
-  tokenId, // string, token ID of the NFT
-  price, // string, eg. '1000000000000000000' for 1 WETH. Must be lower than the current price.
-  expirationTime, // number, the unix timestamp when the listing will expire, in seconds. Optional. Must be at least 15 minutes later in the future. If the current order is going to expire within 15 minutes, then a new expirationTime must be provided.
 })
 ```
 
