@@ -142,7 +142,7 @@ await acceptOffer({
 })
 ```
 
-As above, you can find the know the `orderId` of an offerby calling the `/v1/offers` [endpoint](https://x2y2-io.github.io/api-reference/#/Offers/get_v1_offers).
+As above, you can find the know the `orderId` of an offer by calling the `/v1/offers` [endpoint](https://x2y2-io.github.io/api-reference/#/Offers/get_v1_offers).
 
 ## Overriding Gas
 
