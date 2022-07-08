@@ -91,7 +91,7 @@ await list({
 
 You can think of the gasless methods previously described as "making" new offers or listings. This SDK also supports "taking" existings offers and listings: in other words, buying items that are already listed or accepting offers you have received. It also supports cancelling or modifying previous offers/listings.
 
-For each of these interactions, the signer must send a transaction. As a result, the following methods all return an ethers [TransactionResponse]([TransactionResponse](https://docs.ethers.io/v5/api/providers/types/#providers-TransactionResponse)).
+For each of these interactions, the signer must send a transaction. The following methods all return this transaction as an ethers [TransactionResponse](https://docs.ethers.io/v5/api/providers/types/#providers-TransactionResponse)).
 
 ### Buying
 
@@ -167,7 +167,7 @@ By using this method, the current order will be cancelled off-chain and a new or
 
 ## Overriding Gas
 
-For methods that submit transactions, it's possible to overrides ethers variables like `gasLimit`, `gasPrice`, `maxFeePerGas`, `maxPriorityFeePerGas`, etc.
+For methods that submit transactions, it's possible to override default transaction variables like `gasLimit`, `gasPrice`, `maxFeePerGas`, and/or `maxPriorityFeePerGas` by passing an ethers [overrides object](https://docs.ethers.io/v5/api/contract/contract/#Contract--write).
 
 ```JavaScript
 await acceptOffer({
