@@ -6,7 +6,7 @@ If you just want to get information about open offers and orders on X2Y2, or see
 
 ## Getting Started
 
-The SDK requires an X2Y2 API Key. You can request one from the [Developer Hub](https://discord.gg/YhXfARtEmA).
+The SDK requires an X2Y2 API key. You can request one from the [Developer Hub](https://discord.gg/YhXfARtEmA).
 
 ### Install
 
@@ -24,7 +24,7 @@ npm install @x2y2-io/sdk --save
 
 ### Initiating SDK
 
-Call `init` with your API Key and then initiate an `ethers.Signer` instance to interact with user's wallet:
+Call `init` with your API Key and then initiate an `ethers.Signer` instance to interact with the user's wallet:
 
 ```JavaScript
 import { Signer } from 'ethers'
@@ -39,7 +39,7 @@ const signer: Signer = ethersWallet(WALLET_PRIVATE_KEY, network)
 
 ### Making Offers / Collection Offers
 
-To make a buy offer on an NFT, call the `offer` method. Set `isCollection` to `true` and `tokenId` to a empty string to make a collection offer.
+To make a buy offer, call the `offer` method. Set `isCollection` to `true` and `tokenId` to a empty string to make a collection offer.
 
 ```JavaScript
 await offer({
@@ -127,6 +127,8 @@ await cancelOffer({
 })
 ```
 
+If you don't know the `orderId` of the offer you are trying to cancel, find it by calling the `/v1/offers` [endpoint](https://x2y2-io.github.io/api-reference/#/Offers/get_v1_offers). To find your highest offer on an item, specify `maker`, `contract`, and `token_id` in the API call, as well as `sort=price` and `direction=desc`, before pulling `data[0].id` from the response body.
+
 ### Accept offer
 
 To accept a buy offer or a collection offer, call the `acceptOffer` method.
@@ -139,6 +141,8 @@ await acceptOffer({
   tokenId, // string | undefined, token ID of your NFT, only necessary when accepting a collection offer
 })
 ```
+
+As above, you can find the know the `orderId` of an offerby calling the `/v1/offers` [endpoint](https://x2y2-io.github.io/api-reference/#/Offers/get_v1_offers).
 
 ## Overriding Gas
 
