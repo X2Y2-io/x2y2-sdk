@@ -56,9 +56,9 @@ await offer({
 
 At present X2Y2 only supports making offers in WETH (`0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2`).
 
-### Creating Listings
+### Creating Listings (Orders)
 
-To create a fixed-price listing to sell an item, call the `list` method.
+To create a fixed-price listing to sell an item, also known as an order, call the `list` method.
 
 ```JavaScript
 await list({
