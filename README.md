@@ -47,9 +47,9 @@ Once X2Y2 has the necessary approvals, you can list items for sale and make WETH
 
 ### Making Offers / Collection Offers
 
-*Before making offers, you must approve WETH spending by the X2Y2: Exchange contract `0x74312363e45DCaBA76c59ec49a7Aa8A65a67EeD3`*
+Before making offers, the signer must approve WETH spending by the X2Y2: Exchange contract (`0x74312363e45DCaBA76c59ec49a7Aa8A65a67EeD3`).
 
-To make an offer on an item, call the `offer` method. Set `isCollection` to `true` and `tokenId` to a empty string to make a collection offer.
+To make an offer on an item, call the `offer` method:
 
 ```JavaScript
 await offer({
@@ -64,7 +64,9 @@ await offer({
 })
 ```
 
-At present X2Y2 only supports making offers in WETH (`0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2`).
+Set `isCollection` to `true` and `tokenId` to a empty string to make a collection offer.
+
+At present X2Y2 only supports making offers in WETH.
 
 Note: As of v0.1.4, this method will throw an `Error: Bad request` if the signer does not have sufficient WETH for the offer they are making.
 
