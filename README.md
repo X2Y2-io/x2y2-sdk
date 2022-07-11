@@ -40,6 +40,7 @@ const signer: Signer = ethersWallet(WALLET_PRIVATE_KEY, network)
 ## Gasless Methods
 
 X2Y2 allows you to list items for sale and make WETH offers on others' items without having to send separate transactions each time. This is achieved by first sending one-off approval transactions that enable X2Y2 to:
+
 1. Transfer your items from a specific collection (if you are listing them for sale)
 2. Spend your WETH (if you are making offers)
 
@@ -68,7 +69,7 @@ At present X2Y2 only supports making offers in WETH.
 
 To make a collection offer, set `isCollection` to `true` and `tokenId` to an empty string.
 
-Note: As of v0.1.4, this method will throw an `Error: Bad request` if the signer does not have sufficient WETH for the offer they are making. 
+Note: As of v0.1.4, this method will throw an `Error: Bad request` if the signer does not have sufficient WETH for the offer they are making.
 
 ### Creating Listings (Orders)
 
@@ -106,6 +107,7 @@ await buy({
   price, // string, sale price in wei eg. '1000000000000000000' for 1 ETH
 })
 ```
+
 ### Accept Offer
 
 To accept a buy offer or a collection offer, call the `acceptOffer` method:
@@ -181,8 +183,10 @@ await acceptOffer({
 
 | Error Code | Reason                                                       |
 | :--------- | :----------------------------------------------------------- |
+| 1002       | Rate Limit                                                   |
 | 1006       | User banned from listing(rug/hacker address)                 |
 | 2012       | A listing order for the NFT already exists                   |
+| 2014       | WETH balance not enough                                      |
 | 2020       | Order already cancelled                                      |
 | 2021       | Order already purchased                                      |
 | 2028       | Contract/NFT is not allowed to trade(rug or hacked NFT)      |
