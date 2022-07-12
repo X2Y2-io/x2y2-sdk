@@ -195,6 +195,13 @@ await acceptOffer({
 | 3004       | Wrong currency(currently only ETH supported for sell orders) |
 | 3007       | Invalid API key                                              |
 
+## Diagnosing Common Problems
+
+- If you are unable to make offers, make sure the signing wallet has approved WETH spending by the [X2Y2: Exchange contract](https://etherscan.io/address/0x74312363e45dcaba76c59ec49a7aa8a65a67eed3). You can check ERC20 approvals on [Etherscan](https://etherscan.io/tokenapprovalchecker).
+- If you are unable to list items, make sure the signing wallet has approved the collection's transfer by the [X2Y2: ERC 721 Delegate contract](https://etherscan.io/address/0xF849de01B080aDC3A814FaBE1E2087475cF2E354). You can also check this on [Etherscan](https://etherscan.io/tokenapprovalchecker) by selecting the ERC721 tab.
+- To troubleshoot other methods, store the `TransactionResponse` that is returned. Then use `TransactionResponse.wait` to get a [TransactionReceipt](https://docs.ethers.io/v5/api/providers/types/#providers-TransactionReceipt) which contains the transaction hash. You can then manually find this transaction and see what went wrong.
+- For all other issues not covered here or in the error codes above, get help or submit a bug report at our [Developer Hub](https://discord.gg/YhXfARtEmA).
+
 ## Contributing
 
 X2Y2 welcomes contributions in the form of GitHub issues and pull-requests.
