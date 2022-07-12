@@ -211,6 +211,30 @@ await acceptOffer({
 - To troubleshoot other methods, store the `TransactionResponse` that is returned. Then use `TransactionResponse.wait` to get a [TransactionReceipt](https://docs.ethers.io/v5/api/providers/types/#providers-TransactionReceipt) which contains the transaction hash. You can then manually find this transaction and see what went wrong.
 - For all other issues not covered here or in the error codes above, get help or submit a bug report at our [Developer Hub](https://discord.gg/YhXfARtEmA).
 
+## Example: Collection Offer on BAYC
+
+```JavaScript
+import { Signer } from 'ethers'
+import { ethersWallet, init } from '@x2y2-io/sdk'
+import { Network } from '@x2y2-io/sdk/dist/network'
+
+init(YOUR_API_KEY)
+
+const network: Network = 'mainnet'
+const signer: Signer = ethersWallet(WALLET_PRIVATE_KEY, network)
+
+await offer({
+  network,
+  signer,
+  isCollection: true, // True for collection offer
+  tokenAddress: '0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D', // BAYC contract address
+  tokenId: '', // Blank collection offer
+  currency: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2', // WETH contract address
+  price: '80000000000000000000', // 80 WETH
+  expirationTime: 1800 + Date.now() / 1000, // 30 minutes
+})
+```
+
 ## Contributing
 
 X2Y2 welcomes contributions in the form of GitHub issues and pull-requests.
