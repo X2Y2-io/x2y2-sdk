@@ -169,13 +169,24 @@ By using this method, the current order will be cancelled off-chain and a new or
 
 ## Overriding Gas
 
-For methods that submit transactions, it's possible to override default transaction variables like `gasLimit`, `gasPrice`, `maxFeePerGas`, and/or `maxPriorityFeePerGas` by passing an ethers [overrides object](https://docs.ethers.io/v5/api/contract/contract/#Contract--write).
+For methods that submit transactions, it's possible to override default transaction variables by passing an ethers [overrides object](https://docs.ethers.io/v5/api/contract/contract/#Contract--write):
+
+> The overrides object for write methods may include any of:
+> - overrides.gasPrice - the price to pay per gas
+> - overrides.gasLimit - the limit on the amount of gas to allow the transaction to consume; any unused gas is returned at the gasPrice
+> - overrides.value - the amount of ether (in wei) to forward with the call
+> - overrides.nonce - the nonce to use for the Signer
+
+To send an EIP-1559 transaction, specify `maxPriorityFeePerGas` and `maxFeePerGas` instead of `gasPrice`.
+
+For example, to accept an offer with 150 gwei priority fee and 500 gwei max fee, call the `acceptOffer` method as follows:
 
 ```JavaScript
 await acceptOffer({
 },
 {
-  maxFeePerGas: ethers.utils.parseUnits('10', 'gwei'), // 10 gwei
+  maxPriorityFeePerGas: ethers.utils.parseUnits('150', 'gwei'), // 150 gwei
+  maxFeePerGas: ethers.utils.parseUnits('500', 'gwei') // 500 gwei
 })
 ```
 
