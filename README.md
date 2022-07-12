@@ -69,8 +69,6 @@ At present X2Y2 only supports making offers in WETH.
 
 To make a collection offer, set `isCollection` to `true` and `tokenId` to an empty string.
 
-Note: As of v0.1.4, this method will throw an `Error: Bad request` if the signer does not have sufficient WETH for the offer they are making.
-
 ### Creating Listings (Orders)
 
 Before creating listings, the signer must approve the item's transfer by the [X2Y2: ERC 721 Delegate contract](https://etherscan.io/address/0xF849de01B080aDC3A814FaBE1E2087475cF2E354) with the `setApprovalForAll` function on the item's contract.
