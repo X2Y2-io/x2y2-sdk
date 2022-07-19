@@ -113,7 +113,7 @@ To accept a buy offer or a collection offer, call the `acceptOffer` method:
 ```JavaScript
 await acceptOffer({
   network,
-  signer: buyer, // Signer of the buyer
+  signer: seller, // Signer of the seller
   orderId, // number, id of the offer
   tokenId, // string | undefined, token ID of your NFT, only necessary when accepting a collection offer
 })
