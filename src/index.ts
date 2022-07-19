@@ -1,6 +1,6 @@
 import { BigNumber, ethers } from 'ethers'
 import { APIClient, getSharedAPIClient, initAPIClient } from './api'
-import { X2Y2R1__factory } from './contracts'
+import { ERC20__factory, ERC721__factory, X2Y2R1__factory } from './contracts'
 import { getNetworkMeta, Network } from './network'
 import { CancelInput, Order, RunInput, X2Y2Order } from './types'
 import {
@@ -143,6 +143,16 @@ export async function list({
   expirationTime,
 }: ListPayload): Promise<void> {
   const accountAddress = await signer.getAddress()
+
+  const erc721 = ERC721__factory.connect(tokenAddress, signer)
+  const delegateContract = getNetworkMeta(network).delegateContract
+  const approved = await erc721.isApprovedForAll(
+    accountAddress,
+    delegateContract
+  )
+  if (!approved) {
+    throw new Error('The NFT has not been approved yet.')
+  }
 
   const data = encodeItemData([{ token: tokenAddress, tokenId }])
   const order: X2Y2Order = makeSellOrder(
@@ -304,6 +314,18 @@ export async function offer({
   expirationTime,
 }: OfferPayload) {
   const accountAddress = await signer.getAddress()
+
+  const networkMeta = getNetworkMeta(network)
+  const erc20 = ERC20__factory.connect(networkMeta.wethContract, signer)
+  const balance = await erc20.balanceOf(accountAddress)
+  const allowance = await erc20.allowance(
+    accountAddress,
+    networkMeta.marketContract
+  )
+  const wethbalance = balance.gt(allowance) ? allowance : balance
+  if (wethbalance.lt(price)) {
+    throw new Error('WETH has not been approved yet or balance is not enough')
+  }
 
   const salt = randomSalt()
   const dataMask = [
