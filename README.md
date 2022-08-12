@@ -99,6 +99,7 @@ For each of these interactions, the signer must send a transaction. The followin
 To purchase a listed item, call the `buyOrder` method:
 
 ```JavaScript
+// Get valid orders for an NFT id (Multiple orders may exist for an ERC-1155 NFT)
 const orders = await getSellOrders(
   network,
   '', // maker
@@ -108,7 +109,7 @@ const orders = await getSellOrders(
 await buyOrder({
   network,
   signer: buyer, // Signer of the buyer
-  order: orders[0], // listing
+  order: orders[0], // Pass in the order you choose to buy from above.
 })
 ```
 
@@ -146,6 +147,7 @@ As above, you can find the know the `orderId` of an offer by calling the `/v1/of
 To cancel a listing, call the `cancel` method:
 
 ```JavaScript
+// Get valid orders for an NFT id (Multiple orders may exist for an ERC-1155 NFT)
 const orders = await getSellOrders(
   network,
   maker, // Maker of the listing
@@ -155,7 +157,7 @@ const orders = await getSellOrders(
 await cancel({
   network,
   signer: seller, // Signer of the seller
-  order: orders[0], // listing
+  order: orders[0], // Pass in the order you choose to cancel from above.
 })
 ```
 
@@ -164,6 +166,7 @@ await cancel({
 To lower the price for a certain listing, call the `lowerOrderPrice` method:
 
 ```JavaScript
+// Get valid orders for an NFT id (Multiple orders may exist for an ERC-1155 NFT)
 const orders = await getSellOrders(
   network,
   maker, // Maker of the listing
@@ -173,7 +176,7 @@ const orders = await getSellOrders(
 await lowerOrderPrice({
   network,
   signer: seller, // Signer of the seller
-  order: orders[0], // listing
+  order: orders[0], // Pass in the order you choose to lower price from above.
   price, // string, sale price in wei eg. '1000000000000000000' for 1 ETH. Must be lower than the current price.
   expirationTime, // number, the unix timestamp when the listing will expire, in seconds. Optional. Must be at least 15 minutes later in the future. If the current order is going to expire within 15 minutes, then a new expirationTime must be provided.
 })
