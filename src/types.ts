@@ -1,8 +1,12 @@
 import { BigNumberish } from 'ethers'
 
-export type Pair721 = {
+export type TokenStandard = 'erc721' | 'erc1155'
+
+export type TokenPair = {
   token: string
   tokenId: BigNumberish
+  amount: BigNumberish
+  tokenStandard: TokenStandard
 }
 
 export type Order = {
@@ -17,6 +21,7 @@ export type Order = {
   token: {
     contract: string
     token_id: number
+    erc_type: TokenStandard
   }
   id: number
   price: string

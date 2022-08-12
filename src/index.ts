@@ -1,8 +1,13 @@
 import { BigNumber, ethers } from 'ethers'
 import { APIClient, getSharedAPIClient, initAPIClient } from './api'
-import { ERC20__factory, ERC721__factory, X2Y2R1__factory } from './contracts'
+import {
+  ERC1155__factory,
+  ERC20__factory,
+  ERC721__factory,
+  X2Y2R1__factory,
+} from './contracts'
 import { getNetworkMeta, Network } from './network'
-import { CancelInput, Order, RunInput, X2Y2Order } from './types'
+import { CancelInput, Order, RunInput, TokenStandard, X2Y2Order } from './types'
 import {
   encodeItemData,
   randomSalt,
@@ -32,6 +37,7 @@ export type ListPayload = {
 
   tokenAddress: string
   tokenId: string
+  tokenStandard?: TokenStandard
   price: string
   expirationTime: number
 }
@@ -44,6 +50,13 @@ export type CancelListPayload = {
   tokenId: string
 }
 
+export type CancelPayload = {
+  network: Network
+  signer: ethers.Signer
+
+  order: Order
+}
+
 export type BuyPayload = {
   network: Network
   signer: ethers.Signer
@@ -53,6 +66,13 @@ export type BuyPayload = {
   price: string
 }
 
+export type BuyOrderPayload = {
+  network: Network
+  signer: ethers.Signer
+
+  order: Order
+}
+
 export type OfferPayload = {
   network: Network
   signer: ethers.Signer
@@ -60,6 +80,7 @@ export type OfferPayload = {
   isCollection: boolean
   tokenAddress: string
   tokenId: string | null
+  tokenStandard?: TokenStandard
   currency: string
   price: string
   expirationTime: number
@@ -90,6 +111,15 @@ export type LowerPricePayload = {
   expirationTime?: number | undefined
 }
 
+export type LowerOrderPricePayload = {
+  network: Network
+  signer: ethers.Signer
+
+  order: Order
+  price: string
+  expirationTime?: number | undefined
+}
+
 export function ethersWallet(
   privateKey: string,
   network: Network
@@ -106,11 +136,22 @@ export function init(apiKey: string) {
   initAPIClient(apiKey)
 }
 
+export async function getSellOrders(
+  network: Network,
+  maker: string,
+  tokenAddress: string,
+  tokenId: string
+) {
+  const apiClient: APIClient = getSharedAPIClient(network)
+  return await apiClient.getSellOrders(maker, tokenAddress, tokenId)
+}
+
 function makeSellOrder(
   network: Network,
   user: string,
   expirationTime: number,
-  items: { price: string; data: string }[]
+  items: { price: string; data: string }[],
+  tokenStandard: TokenStandard | undefined
 ) {
   if (expirationTime < Math.round(Date.now() / 1000) + 900) {
     throw new Error('The expiration time has to be 15 minutes later.')
@@ -121,7 +162,10 @@ function makeSellOrder(
     user,
     network: getNetworkMeta(network).id,
     intent: INTENT_SELL,
-    delegateType: DELEGATION_TYPE_ERC721,
+    delegateType:
+      tokenStandard === 'erc1155'
+        ? DELEGATION_TYPE_ERC1155
+        : DELEGATION_TYPE_ERC721,
     deadline: expirationTime,
     currency: ethers.constants.AddressZero,
     dataMask: '0x',
@@ -139,14 +183,22 @@ export async function list({
 
   tokenAddress,
   tokenId,
+  tokenStandard,
   price,
   expirationTime,
 }: ListPayload): Promise<void> {
   const accountAddress = await signer.getAddress()
 
-  const erc721 = ERC721__factory.connect(tokenAddress, signer)
-  const delegateContract = getNetworkMeta(network).delegateContract
-  const approved = await erc721.isApprovedForAll(
+  const networkMeta = getNetworkMeta(network)
+  const delegateContract =
+    tokenStandard === 'erc1155'
+      ? networkMeta.erc1155DelegateContract
+      : networkMeta.erc721DelegateContract
+  const contract =
+    tokenStandard === 'erc1155'
+      ? ERC1155__factory.connect(tokenAddress, signer)
+      : ERC721__factory.connect(tokenAddress, signer)
+  const approved = await contract.isApprovedForAll(
     accountAddress,
     delegateContract
   )
@@ -154,12 +206,20 @@ export async function list({
     throw new Error('The NFT has not been approved yet.')
   }
 
-  const data = encodeItemData([{ token: tokenAddress, tokenId }])
+  const data = encodeItemData([
+    {
+      token: tokenAddress,
+      tokenId,
+      amount: 1,
+      tokenStandard: tokenStandard ?? 'erc721',
+    },
+  ])
   const order: X2Y2Order = makeSellOrder(
     network,
     accountAddress,
     expirationTime,
-    [{ price, data }]
+    [{ price, data }],
+    tokenStandard
   )
   await signSellOrder(signer, order)
   await getSharedAPIClient(network).postSellOrder(order)
@@ -218,7 +278,24 @@ export async function cancelList(
     tokenId
   )
 
-  if (!order) throw new Error('No order found')
+  if (!order || !order.token || order.token.erc_type !== 'erc721')
+    throw new Error('No order found')
+
+  return await cancelOrder(network, signer, order.id, callOverrides)
+}
+
+export async function cancel(
+  { network, signer, order }: CancelPayload,
+  callOverrides: ethers.Overrides = {}
+) {
+  const accountAddress = await signer.getAddress()
+
+  if (
+    !(order.id && order.token) ||
+    order.maker.toLowerCase() !== accountAddress.toLowerCase()
+  ) {
+    throw new Error('Invalid order')
+  }
 
   return await cancelOrder(network, signer, order.id, callOverrides)
 }
@@ -288,7 +365,43 @@ export async function buy(
     network
   ).getSellOrder('', tokenAddress, tokenId)
 
-  if (!order || order.price !== price) throw new Error('No order found')
+  if (
+    !order ||
+    order.price !== price ||
+    !order.token ||
+    order.token.erc_type !== 'erc721'
+  )
+    throw new Error('No order found')
+
+  return await acceptOrder(
+    network,
+    signer,
+    OP_COMPLETE_SELL_OFFER,
+    order.id,
+    order.currency,
+    order.price,
+    '',
+    callOverrides
+  )
+}
+
+export async function buyOrder(
+  {
+    network,
+    signer,
+
+    order,
+  }: BuyOrderPayload,
+  callOverrides: ethers.Overrides = {}
+) {
+  const accountAddress = await signer.getAddress()
+
+  if (
+    !(order.id && order.price && order.token) ||
+    order.maker.toLowerCase() === accountAddress.toLowerCase()
+  ) {
+    throw new Error('Invalid Order')
+  }
 
   return await acceptOrder(
     network,
@@ -309,6 +422,7 @@ export async function offer({
   isCollection,
   tokenAddress,
   tokenId,
+  tokenStandard,
   currency,
   price,
   expirationTime,
@@ -329,18 +443,31 @@ export async function offer({
 
   const salt = randomSalt()
   const dataMask = [
-    { token: ethers.constants.AddressZero, tokenId: '0x' + '1'.repeat(64) },
+    {
+      token: ethers.constants.AddressZero,
+      tokenId: '0x' + '1'.repeat(64),
+      amount: 0,
+      tokenStandard: tokenStandard ?? 'erc721',
+    },
   ]
   const dataTokenId = isCollection ? '0' : tokenId ?? '0'
   const itemData = encodeItemData([
-    { token: tokenAddress, tokenId: dataTokenId },
+    {
+      token: tokenAddress,
+      tokenId: dataTokenId,
+      amount: 1,
+      tokenStandard: tokenStandard ?? 'erc721',
+    },
   ])
   const order: X2Y2Order = {
     salt,
     user: accountAddress,
     network: getNetworkMeta(network).id,
     intent: INTENT_BUY,
-    delegateType: DELEGATION_TYPE_ERC721,
+    delegateType:
+      tokenStandard === 'erc1155'
+        ? DELEGATION_TYPE_ERC1155
+        : DELEGATION_TYPE_ERC721,
     deadline: expirationTime,
     currency,
     dataMask: isCollection ? encodeItemData(dataMask) : '0x',
@@ -410,20 +537,69 @@ export async function lowerPrice({
     tokenId
   )
 
-  if (!list || !list.end_at) throw new Error('No order found')
+  if (
+    !list ||
+    !list.end_at ||
+    !list.token ||
+    list.token.erc_type !== 'erc721'
+  ) {
+    throw new Error('No order found')
+  }
   const oldPrice = BigNumber.from(list.price)
   const newPrice = BigNumber.from(price)
   if (newPrice.gte(oldPrice)) {
     throw new Error('Must be lower than the current price.')
   }
 
-  const data = encodeItemData([{ token: tokenAddress, tokenId }])
+  const tokenStandard = list.token.erc_type
+  const data = encodeItemData([
+    { token: tokenAddress, tokenId, amount: 1, tokenStandard },
+  ])
   const order: X2Y2Order = makeSellOrder(
     network,
     accountAddress,
     expirationTime ?? parseInt(list.end_at),
-    [{ price, data }]
+    [{ price, data }],
+    tokenStandard
   )
   await signSellOrder(signer, order)
   await apiClient.postLowerPrice(order, list.id)
+}
+
+export async function lowerOrderPrice({
+  network,
+  signer,
+
+  order,
+  price,
+  expirationTime,
+}: LowerOrderPricePayload) {
+  const apiClient: APIClient = getSharedAPIClient(network)
+  const accountAddress = await signer.getAddress()
+
+  if (!order.id || !order.end_at || !order.token) {
+    throw new Error('Invalid order')
+  }
+  const oldPrice = BigNumber.from(order.price)
+  const newPrice = BigNumber.from(price)
+  if (newPrice.gte(oldPrice)) {
+    throw new Error('Must be lower than the current price.')
+  }
+
+  const token = order.token
+  const tokenAddress = token.contract
+  const tokenId = token.token_id
+  const tokenStandard = token.erc_type
+  const data = encodeItemData([
+    { token: tokenAddress, tokenId, amount: 1, tokenStandard },
+  ])
+  const sellOrder: X2Y2Order = makeSellOrder(
+    network,
+    accountAddress,
+    expirationTime ?? parseInt(order.end_at),
+    [{ price, data }],
+    tokenStandard
+  )
+  await signSellOrder(signer, sellOrder)
+  await apiClient.postLowerPrice(sellOrder, order.id)
 }

@@ -1,5 +1,5 @@
 import { BigNumber, ethers } from 'ethers'
-import { CancelInput, Pair721, RunInput, X2Y2Order } from './types'
+import { CancelInput, RunInput, TokenPair, X2Y2Order } from './types'
 
 const orderItemParamType = `tuple(uint256 price, bytes data)`
 const orderParamType = `tuple(uint256 salt, address user, uint256 network, uint256 intent, uint256 delegateType, uint256 deadline, address currency, bytes dataMask, ${orderItemParamType}[] items, bytes32 r, bytes32 s, uint8 v, uint8 signVersion)`
@@ -21,11 +21,15 @@ const settleDetailParamType = `tuple(uint8 op, uint256 orderIdx, uint256 itemIdx
 const settleSharedParamType = `tuple(uint256 salt, uint256 deadline, uint256 amountToEth, uint256 amountToWeth, address user, bool canFail)`
 const runInputParamType = `tuple(${orderParamType}[] orders, ${settleDetailParamType}[] details, ${settleSharedParamType} shared, bytes32 r, bytes32 s, uint8 v)`
 
-export function encodeItemData(data: Pair721[]): string {
-  return ethers.utils.defaultAbiCoder.encode(
-    ['tuple(address token, uint256 tokenId)[]'],
-    [data]
-  )
+const data1155ParamType = `tuple(address token, uint256 tokenId, uint256 amount)[]`
+const data721ParamType = `tuple(address token, uint256 tokenId)[]`
+
+export function encodeItemData(data: TokenPair[]): string {
+  if (data[0]?.tokenStandard === 'erc1155') {
+    return ethers.utils.defaultAbiCoder.encode([data1155ParamType], [data])
+  } else {
+    return ethers.utils.defaultAbiCoder.encode([data721ParamType], [data])
+  }
 }
 
 export function encodeOrder(order: X2Y2Order): string {
