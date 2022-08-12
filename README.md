@@ -59,6 +59,7 @@ await offer({
   isCollection: false, // bool, set true for collection offer
   tokenAddress, // string, contract address of NFT collection
   tokenId, // string, token ID of the NFT, use empty string for collection offer
+  tokenStandard, // 'erc721' | 'erc1155'
   currency: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2', // string, contract address of WETH
   price, // string, eg. '1000000000000000000' for 1 WETH
   expirationTime, // number, the unix timestamp when the listing will expire, in seconds
@@ -81,6 +82,7 @@ await list({
   signer: seller, // Signer of the seller
   tokenAddress, // string, contract address of NFT collection
   tokenId, // string, token ID of the NFT
+  tokenStandard, // 'erc721' | 'erc1155'
   price, // string, sale price in wei eg. '1000000000000000000' for 1 ETH
   expirationTime, // number, the unix timestamp when the listing will expire, in seconds. Must be at least 15 minutes later in the future.
 })
@@ -94,15 +96,20 @@ For each of these interactions, the signer must send a transaction. The followin
 
 ### Buying
 
-To purchase a listed item, call the `buy` method:
+To purchase a listed item, call the `buyOrder` method:
 
 ```JavaScript
-await buy({
+// Get valid orders for an NFT id (Multiple orders may exist for an ERC-1155 NFT)
+const orders = await getSellOrders(
+  network,
+  '', // maker
+  tokenAddress,
+  tokenId
+)
+await buyOrder({
   network,
   signer: buyer, // Signer of the buyer
-  tokenAddress, // string, contract address of NFT collection
-  tokenId, // string, token ID of the NFT
-  price, // string, sale price in wei eg. '1000000000000000000' for 1 ETH
+  order: orders[0], // Pass in the order you choose to buy from above.
 })
 ```
 
@@ -137,27 +144,39 @@ As above, you can find the know the `orderId` of an offer by calling the `/v1/of
 
 ### Cancel Listing
 
-To cancel a listing, call the `cancelList` method:
+To cancel a listing, call the `cancel` method:
 
 ```JavaScript
-await cancelList({
+// Get valid orders for an NFT id (Multiple orders may exist for an ERC-1155 NFT)
+const orders = await getSellOrders(
   network,
-  signer: seller, // Signer of the seller
+  maker, // Maker of the listing
   tokenAddress, // string, contract address of NFT collection
   tokenId, // string, token ID of the NFT
+)
+await cancel({
+  network,
+  signer: seller, // Signer of the seller
+  order: orders[0], // Pass in the order you choose to cancel from above.
 })
 ```
 
 ### Lower Price
 
-To lower the price for a certain listing, call the `lowerPrice` method:
+To lower the price for a certain listing, call the `lowerOrderPrice` method:
 
 ```JavaScript
-await lowerPrice({
+// Get valid orders for an NFT id (Multiple orders may exist for an ERC-1155 NFT)
+const orders = await getSellOrders(
   network,
-  signer: seller, // Signer of the seller
+  maker, // Maker of the listing
   tokenAddress, // string, contract address of NFT collection
   tokenId, // string, token ID of the NFT
+)
+await lowerOrderPrice({
+  network,
+  signer: seller, // Signer of the seller
+  order: orders[0], // Pass in the order you choose to lower price from above.
   price, // string, sale price in wei eg. '1000000000000000000' for 1 ETH. Must be lower than the current price.
   expirationTime, // number, the unix timestamp when the listing will expire, in seconds. Optional. Must be at least 15 minutes later in the future. If the current order is going to expire within 15 minutes, then a new expirationTime must be provided.
 })
@@ -170,6 +189,7 @@ By using this method, the current order will be cancelled off-chain and a new or
 For methods that submit transactions, it's possible to override default transaction variables by passing an ethers [overrides object](https://docs.ethers.io/v5/api/contract/contract/#Contract--write):
 
 > The overrides object for write methods may include any of:
+>
 > - overrides.gasPrice - the price to pay per gas
 > - overrides.gasLimit - the limit on the amount of gas to allow the transaction to consume; any unused gas is returned at the gasPrice
 > - overrides.value - the amount of ether (in wei) to forward with the call

@@ -48,9 +48,13 @@ export class APIClient {
     if (resp.status === 429) throw new Error('rate limit')
     const respData = JSON.parse(resp.data)
     if (!respData || !respData.success) {
+      const errorCode = respData?.code
       const errors = respData?.errors
-      const msg =
-        errors && errors.length > 0 ? `Err_${errors[0].code}` : 'bad response'
+      const msg = errorCode
+        ? `Err_${errorCode}`
+        : errors && errors.length > 0
+        ? `Err_${errors[0].code}`
+        : 'bad response'
       throw new Error(msg)
     }
     return respData
@@ -94,7 +98,24 @@ export class APIClient {
     })
   }
 
-  async getSellOrder(maker: string, tokenAddress: string, tokenId: string) {
+  async getSellOrder(
+    maker: string,
+    tokenAddress: string,
+    tokenId: string
+  ): Promise<Order | undefined> {
+    const orders: Order[] = await this.getSellOrders(
+      maker,
+      tokenAddress,
+      tokenId
+    )
+    return orders.length > 0 ? orders[0] : undefined
+  }
+
+  async getSellOrders(
+    maker: string,
+    tokenAddress: string,
+    tokenId: string
+  ): Promise<Order[]> {
     const params: Record<string, string> = {
       maker,
       contract: tokenAddress,
@@ -102,9 +123,7 @@ export class APIClient {
       network_id: getNetworkMeta(this.network).id.toString(),
     }
     const { data } = await this._get('/v1/orders', params)
-    return data instanceof Array && data.length > 0
-      ? (data[0] as Order)
-      : undefined
+    return data instanceof Array && data.length > 0 ? (data as Order[]) : []
   }
 
   async getCancelInput(
