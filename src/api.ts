@@ -157,6 +157,7 @@ export class APIClient {
       amountToEth: '0',
       amountToWeth: '0',
       items: [{ orderId, currency, price, tokenId }],
+      check: true, // set false to skip nft ownership check
     })
     const inputData = (data ?? []) as { order_id: number; input: string }[]
     const input = inputData.find(d => d.order_id === orderId)
