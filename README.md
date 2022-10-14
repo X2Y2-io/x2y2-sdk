@@ -33,9 +33,11 @@ import { Network } from '@x2y2-io/sdk/dist/network'
 
 init(YOUR_API_KEY)
 
-const network: Network = 'mainnet'
+const network: Network = Network.Mainnet
 const signer: Signer = ethersWallet(WALLET_PRIVATE_KEY, network)
 ```
+
+To use the SDK on the Goerli testnet, use `Network.Goerli` instead of `Network.Mainnet` when initializing a `Signer`.
 
 ## Gasless Methods
 
