@@ -30,7 +30,7 @@ export const getNetworkMeta = (network: Network): NetworkMeta => {
         erc721DelegateContract: '0x095be13D86000260852E4F92eA48dc333fa35249',
         erc1155DelegateContract: '0x675B92ed07184635dEA2EF6fB403875DfA09d74A',
         wethContract: '0xb4fbf271143f4fbf7b91a5ded31805e42b2208d6',
-        apiBaseURL: 'https://goerli-api.x2y2.io',
+        apiBaseURL: 'https://goerli-api.x2y2.org',
       }
   }
 }
