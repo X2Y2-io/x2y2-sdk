@@ -1,4 +1,7 @@
-export type Network = 'mainnet' | 'goerli'
+export enum Network {
+  Mainnet = 'mainnet',
+  Goerli = 'goerli',
+}
 
 export type NetworkMeta = {
   id: number
@@ -12,7 +15,7 @@ export type NetworkMeta = {
 
 export const getNetworkMeta = (network: Network): NetworkMeta => {
   switch (network) {
-    case 'mainnet':
+    case Network.Mainnet:
       return {
         id: 1,
         rpcUrl: 'https://rpc.ankr.com/eth',
@@ -22,7 +25,7 @@ export const getNetworkMeta = (network: Network): NetworkMeta => {
         wethContract: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
         apiBaseURL: 'https://api.x2y2.org',
       }
-    case 'goerli':
+    case Network.Goerli:
       return {
         id: 5,
         rpcUrl: 'https://goerli.infura.io/v3/',

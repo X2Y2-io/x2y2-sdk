@@ -47,7 +47,7 @@ describe('x2y2', () => {
       tokenStandard: 'erc1155',
     },
   }
-  const network: Network = 'goerli'
+  const network: Network = Network.Goerli
   const weth = getNetworkMeta(network).wethContract
   const price: string = '2000000000000000'
   const newPrice: string = '1800000000000000'
