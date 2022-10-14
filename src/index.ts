@@ -132,8 +132,8 @@ export function ethersWallet(
   return new ethers.Wallet(privateKey, provider)
 }
 
-export function init(apiKey: string) {
-  initAPIClient(apiKey)
+export function init(apiKey: string, network: Network) {
+  initAPIClient(apiKey, network)
 }
 
 export async function getSellOrders(
@@ -278,8 +278,14 @@ export async function cancelList(
     tokenId
   )
 
-  if (!order || !order.token || order.token.erc_type !== 'erc721')
-    throw new Error('No order found')
+  if (
+    !order ||
+    !order.token ||
+    order.status !== 'open' ||
+    order.token.erc_type !== 'erc721'
+  ) {
+    throw new Error(order ? 'Invalid order' : 'No order found')
+  }
 
   return await cancelOrder(network, signer, order.id, callOverrides)
 }
@@ -367,11 +373,13 @@ export async function buy(
 
   if (
     !order ||
-    order.price !== price ||
     !order.token ||
+    order.price !== price ||
+    order.status !== 'open' ||
     order.token.erc_type !== 'erc721'
-  )
-    throw new Error('No order found')
+  ) {
+    throw new Error(order ? 'Invalid order' : 'No order found')
+  }
 
   return await acceptOrder(
     network,
@@ -536,14 +544,14 @@ export async function lowerPrice({
     tokenAddress,
     tokenId
   )
-
   if (
     !list ||
     !list.end_at ||
     !list.token ||
+    list.status !== 'open' ||
     list.token.erc_type !== 'erc721'
   ) {
-    throw new Error('No order found')
+    throw new Error(list ? 'Invalid order' : 'No order found')
   }
   const oldPrice = BigNumber.from(list.price)
   const newPrice = BigNumber.from(price)

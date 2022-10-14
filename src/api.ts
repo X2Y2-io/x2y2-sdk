@@ -166,10 +166,11 @@ export class APIClient {
 
 const sharedAPIClient: Record<Network, APIClient | null> = {
   mainnet: null,
+  goerli: null,
 }
 
-export async function initAPIClient(apiKey: string) {
-  sharedAPIClient.mainnet = new APIClient('mainnet', apiKey)
+export async function initAPIClient(apiKey: string, network: Network) {
+  sharedAPIClient[network] = new APIClient(network, apiKey)
 }
 
 export const getSharedAPIClient = (network: Network) => {
