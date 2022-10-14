@@ -60,14 +60,18 @@ export class APIClient {
     return respData
   }
 
-  async _postX2Y2Order(order: X2Y2Order, isCollection: boolean) {
+  async _postX2Y2Order(
+    order: X2Y2Order,
+    royalty: number,
+    isCollection: boolean
+  ) {
     return await this._post('/api/orders/add', {
       order: encodeOrder(order),
       isBundle: false,
       bundleName: '',
       bundleDesc: '',
       orderIds: [],
-      royalties: [],
+      royalties: [royalty],
       changePrice: false,
       isCollection,
       isPrivate: false,
@@ -75,22 +79,22 @@ export class APIClient {
     })
   }
 
-  async postSellOrder(order: X2Y2Order) {
-    return await this._postX2Y2Order(order, false)
+  async postSellOrder(order: X2Y2Order, royalty: number) {
+    return await this._postX2Y2Order(order, royalty, false)
   }
 
   async postBuyOffer(order: X2Y2Order, isCollection: boolean) {
-    return await this._postX2Y2Order(order, isCollection)
+    return await this._postX2Y2Order(order, 0, isCollection)
   }
 
-  async postLowerPrice(order: X2Y2Order, orderId: number) {
+  async postLowerPrice(order: X2Y2Order, orderId: number, royalty: number) {
     return await this._post('/api/orders/add', {
       order: encodeOrder(order),
       isBundle: false,
       bundleName: '',
       bundleDesc: '',
       orderIds: [orderId],
-      royalties: [],
+      royalties: [royalty],
       changePrice: true,
       isCollection: false,
       isPrivate: false,
@@ -126,6 +130,40 @@ export class APIClient {
     return data instanceof Array && data.length > 0 ? (data as Order[]) : []
   }
 
+  async getNftOffer(
+    tokenAddress: string,
+    tokenId: string | undefined,
+    sort: 'created_at' | 'price',
+    direction: 'asc' | 'desc'
+  ): Promise<Order | undefined> {
+    const offers: Order[] = await this.getNftOffers(
+      tokenAddress,
+      tokenId,
+      sort,
+      direction
+    )
+    return offers.length > 0 ? offers[0] : undefined
+  }
+
+  async getNftOffers(
+    tokenAddress: string,
+    tokenId: string | undefined,
+    sort: 'created_at' | 'price',
+    direction: 'asc' | 'desc'
+  ): Promise<Order[]> {
+    const params: Record<string, string> = {
+      contract: tokenAddress,
+      network_id: getNetworkMeta(this.network).id.toString(),
+      sort,
+      direction,
+    }
+    if (tokenId) {
+      params.token_id = tokenId
+    }
+    const { data } = await this._get('/v1/offers', params)
+    return data instanceof Array && data.length > 0 ? (data as Order[]) : []
+  }
+
   async getCancelInput(
     caller: string,
     op: number,
@@ -149,14 +187,18 @@ export class APIClient {
     orderId: number,
     currency: string,
     price: string,
-    tokenId: string
+    royalty: number | undefined,
+    payback: number | undefined,
+    tokenId: string,
+    check: boolean
   ): Promise<RunInput | undefined> {
     const { data } = await this._post('/api/orders/sign', {
       caller,
       op,
       amountToEth: '0',
       amountToWeth: '0',
-      items: [{ orderId, currency, price, tokenId }],
+      items: [{ orderId, currency, price, tokenId, royalty, payback }],
+      check,
     })
     const inputData = (data ?? []) as { order_id: number; input: string }[]
     const input = inputData.find(d => d.order_id === orderId)
