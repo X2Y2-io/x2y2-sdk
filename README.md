@@ -86,6 +86,8 @@ await list({
   tokenId, // string, token ID of the NFT
   tokenStandard, // 'erc721' | 'erc1155'
   price, // string, sale price in wei eg. '1000000000000000000' for 1 ETH
+  royalty, // optional, number, royalty fee. This parameter is only available for a small group of API Keys at the moment.
+  // The number can’t be larger than the royalty fee rate set by the collection owner. Base rate is 10^6. For example 50000 means 5% in royalty fee. Collection's royalty fee rate can be obtained via the Public API /v1/contracts/{contract}
   expirationTime, // number, the unix timestamp when the listing will expire, in seconds. Must be at least 15 minutes later in the future.
 })
 ```
@@ -112,6 +114,9 @@ await buyOrder({
   network,
   signer: buyer, // Signer of the buyer
   order: orders[0], // Pass in the order you choose to buy from above.
+  payback, // optional, number, the percentage of royalty that the buyer refuse to pay (which would be paid back to the buyer). For example, 0 means pay full royalty to the collection owner/artist.
+  // This parameter is only available for a small group of API Keys at the moment.
+  // The number can't be larger than the royalty_fee set by the seller, which could be obtained in the order's data. Base rate is 10^6. For example 50000 means 5%
 })
 ```
 
