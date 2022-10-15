@@ -92,11 +92,11 @@ await list({
 })
 ```
 
-## Other Methods
+## Gas-cost Methods
 
 You can think of the gasless methods previously described as "making" new offers or listings. This SDK also supports "taking" existings offers and listings: in other words, buying items that are already listed or accepting offers you have received. It also supports cancelling or modifying previous offers/listings.
 
-For each of these interactions, the signer must send a transaction. The following methods all return the sent transaction as an ethers [TransactionResponse](https://docs.ethers.io/v5/api/providers/types/#providers-TransactionResponse)).
+For each of these interactions, the signer must commit a transaction. The following methods all return the sent transaction as an ethers [TransactionResponse](https://docs.ethers.io/v5/api/providers/types/#providers-TransactionResponse)).
 
 ### Buy
 
