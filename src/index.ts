@@ -39,6 +39,7 @@ export type ListPayload = {
   tokenId: string
   tokenStandard?: TokenStandard
   price: string
+  royalty?: number | undefined
   expirationTime: number
 }
 
@@ -71,6 +72,7 @@ export type BuyOrderPayload = {
   signer: ethers.Signer
 
   order: Order
+  payback?: number | undefined
 }
 
 export type OfferPayload = {
@@ -97,7 +99,7 @@ export type AcceptOfferPayload = {
   network: Network
   signer: ethers.Signer
 
-  orderId: number
+  offer: Order
   tokenId: string | undefined
 }
 
@@ -146,6 +148,17 @@ export async function getSellOrders(
   return await apiClient.getSellOrders(maker, tokenAddress, tokenId)
 }
 
+export async function getNftOffers(
+  network: Network,
+  tokenAddress: string,
+  tokenId: string | undefined,
+  sort: 'created_at' | 'price',
+  direction: 'asc' | 'desc'
+) {
+  const apiClient: APIClient = getSharedAPIClient(network)
+  return await apiClient.getNftOffers(tokenAddress, tokenId, sort, direction)
+}
+
 function makeSellOrder(
   network: Network,
   user: string,
@@ -185,6 +198,7 @@ export async function list({
   tokenId,
   tokenStandard,
   price,
+  royalty,
   expirationTime,
 }: ListPayload): Promise<void> {
   const accountAddress = await signer.getAddress()
@@ -222,7 +236,7 @@ export async function list({
     tokenStandard
   )
   await signSellOrder(signer, order)
-  await getSharedAPIClient(network).postSellOrder(order)
+  await getSharedAPIClient(network).postSellOrder(order, royalty)
 }
 
 async function cancelOrder(
@@ -314,6 +328,8 @@ async function acceptOrder(
   orderId: number,
   currency: string,
   price: string,
+  royalty: number | undefined,
+  payback: number | undefined,
   tokenId: string,
   callOverrides: ethers.Overrides = {}
 ) {
@@ -326,6 +342,8 @@ async function acceptOrder(
     orderId,
     currency,
     price,
+    royalty,
+    payback,
     tokenId
   )
   // check
@@ -388,6 +406,8 @@ export async function buy(
     order.id,
     order.currency,
     order.price,
+    undefined,
+    undefined,
     '',
     callOverrides
   )
@@ -399,6 +419,7 @@ export async function buyOrder(
     signer,
 
     order,
+    payback,
   }: BuyOrderPayload,
   callOverrides: ethers.Overrides = {}
 ) {
@@ -410,6 +431,9 @@ export async function buyOrder(
   ) {
     throw new Error('Invalid Order')
   }
+  if (payback && payback > order.royalty_fee) {
+    throw new Error(`Payback can't be greater than royalty fee.`)
+  }
 
   return await acceptOrder(
     network,
@@ -418,6 +442,8 @@ export async function buyOrder(
     order.id,
     order.currency,
     order.price,
+    order.royalty_fee,
+    payback,
     '',
     callOverrides
   )
@@ -508,20 +534,22 @@ export async function acceptOffer(
     network,
     signer,
 
-    orderId,
+    offer,
     tokenId,
   }: AcceptOfferPayload,
   callOverrides: ethers.Overrides = {}
 ) {
-  if (!orderId) throw new Error('Invalid orderId')
+  if (!offer || !offer.id) throw new Error('Invalid orderId')
 
   return await acceptOrder(
     network,
     signer,
     OP_COMPLETE_BUY_OFFER,
-    orderId,
-    '0x',
-    '0',
+    offer.id,
+    offer.currency,
+    offer.price,
+    undefined,
+    undefined,
     tokenId ?? '',
     callOverrides
   )
@@ -571,7 +599,7 @@ export async function lowerPrice({
     tokenStandard
   )
   await signSellOrder(signer, order)
-  await apiClient.postLowerPrice(order, list.id)
+  await apiClient.postLowerPrice(order, list.id, list.royalty_fee)
 }
 
 export async function lowerOrderPrice({
@@ -609,5 +637,5 @@ export async function lowerOrderPrice({
     tokenStandard
   )
   await signSellOrder(signer, sellOrder)
-  await apiClient.postLowerPrice(sellOrder, order.id)
+  await apiClient.postLowerPrice(sellOrder, order.id, order.royalty_fee)
 }

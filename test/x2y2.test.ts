@@ -1,16 +1,15 @@
 import { constants, ethers, Signer } from 'ethers'
 import {
   acceptOffer,
-  buy,
   buyOrder,
   cancel,
   cancelList,
   cancelOffer,
   ethersWallet,
+  getNftOffers,
   getSellOrders,
   init,
   list,
-  lowerPrice,
   lowerOrderPrice,
   offer,
 } from '../src/index'
@@ -55,6 +54,7 @@ describe('x2y2', () => {
     Math.round(Date.now() / 1000) + 30 * 24 * 60 * 60
   const delayApiTime = 6000
   const delayTxTime = 60000
+  const maxFeePerGas = ethers.utils.parseUnits('100', 'gwei')
 
   const sleep = (msec: number) =>
     new Promise(resolve => setTimeout(resolve, msec))
@@ -75,17 +75,25 @@ describe('x2y2', () => {
       tokenId: tokens.erc721.tokenId,
       tokenStandard: tokens.erc721.tokenStandard,
       price,
+      royalty: 0,
       expirationTime,
     })
     await sleep(delayApiTime)
   })
 
   it('lowerPrice erc721', async () => {
-    await lowerPrice({
+    const maker = await seller.getAddress()
+    const orders = await getSellOrders(
+      network,
+      maker,
+      tokens.erc721.token,
+      tokens.erc721.tokenId
+    )
+    const order = orders[0]
+    await lowerOrderPrice({
       network,
       signer: seller,
-      tokenAddress: tokens.erc721.token,
-      tokenId: tokens.erc721.tokenId,
+      order: order,
       price: newPrice,
       expirationTime,
     })
@@ -100,6 +108,7 @@ describe('x2y2', () => {
       tokenId: tokens.erc1155.tokenId,
       tokenStandard: tokens.erc1155.tokenStandard,
       price,
+      royalty: 0,
       expirationTime,
     })
     await sleep(delayApiTime)
@@ -113,10 +122,11 @@ describe('x2y2', () => {
       tokens.erc1155.token,
       tokens.erc1155.tokenId
     )
+    const order = orders[0]
     await lowerOrderPrice({
       network,
       signer: seller,
-      order: orders[0],
+      order: order,
       price: newPrice,
       expirationTime,
     })
@@ -131,9 +141,7 @@ describe('x2y2', () => {
         tokenAddress: tokens.erc721.token,
         tokenId: tokens.erc721.tokenId,
       },
-      {
-        maxFeePerGas: ethers.utils.parseUnits('10', 'gwei'),
-      }
+      { maxFeePerGas }
     )
     await sleep(delayTxTime)
   })
@@ -145,15 +153,23 @@ describe('x2y2', () => {
       tokenAddress: tokens.erc721.token,
       tokenId: tokens.erc721.tokenId,
       price,
+      royalty: 7500,
       expirationTime,
     })
     await sleep(delayApiTime)
-    await buy({
+    const maker = await seller.getAddress()
+    const orders = await getSellOrders(
+      network,
+      maker,
+      tokens.erc721.token,
+      tokens.erc721.tokenId
+    )
+    const order = orders[0]
+    await buyOrder({
       network,
       signer: buyer,
-      tokenAddress: tokens.erc721.token,
-      tokenId: tokens.erc721.tokenId,
-      price,
+      order: order,
+      payback: order.royalty_fee / 2,
     })
     await sleep(delayTxTime)
   })
@@ -172,9 +188,7 @@ describe('x2y2', () => {
         signer: seller,
         order: orders[0],
       },
-      {
-        maxFeePerGas: ethers.utils.parseUnits('10', 'gwei'),
-      }
+      { maxFeePerGas }
     )
     await sleep(delayTxTime)
   })
@@ -187,6 +201,7 @@ describe('x2y2', () => {
       tokenId: tokens.erc1155.tokenId,
       tokenStandard: tokens.erc1155.tokenStandard,
       price,
+      royalty: 0,
       expirationTime,
     })
     await sleep(delayApiTime)
@@ -197,10 +212,11 @@ describe('x2y2', () => {
       tokens.erc1155.token,
       tokens.erc1155.tokenId
     )
+    const order = orders[0]
     await buyOrder({
       network,
       signer: buyer,
-      order: orders[0],
+      order: order,
     })
     await sleep(delayTxTime)
   })
@@ -212,7 +228,7 @@ describe('x2y2', () => {
       isCollection: false,
       tokenAddress: tokens.erc721.token,
       tokenId: tokens.erc721.tokenId,
-      tokenStandard: 'erc721',
+      tokenStandard: tokens.erc721.tokenStandard,
       currency: weth,
       price,
       expirationTime,
@@ -227,7 +243,7 @@ describe('x2y2', () => {
       isCollection: true,
       tokenAddress: tokens.erc721.token,
       tokenId: '0',
-      tokenStandard: 'erc721',
+      tokenStandard: tokens.erc721.tokenStandard,
       currency: weth,
       price,
       expirationTime,
@@ -236,24 +252,36 @@ describe('x2y2', () => {
   })
 
   it('cancelOffer erc721', async () => {
+    const offers = await getNftOffers(
+      network,
+      tokens.erc721.token,
+      tokens.erc721.tokenId,
+      'price',
+      'asc'
+    )
     await cancelOffer(
       {
         network,
         signer: seller,
-        orderId: 11,
+        orderId: offers[0].id,
       },
-      {
-        maxFeePerGas: ethers.utils.parseUnits('100', 'gwei'),
-      }
+      { maxFeePerGas }
     )
     await sleep(delayTxTime)
   })
 
   it('acceptOffer erc721', async () => {
+    const offers = await getNftOffers(
+      network,
+      tokens.erc721.token,
+      undefined,
+      'price',
+      'asc'
+    )
     await acceptOffer({
       network,
       signer: buyer,
-      orderId: 12,
+      offer: offers[0],
       tokenId: tokens.erc721.tokenId,
     })
     await sleep(delayApiTime)
@@ -266,7 +294,7 @@ describe('x2y2', () => {
       isCollection: false,
       tokenAddress: tokens.erc1155.token,
       tokenId: tokens.erc1155.tokenId,
-      tokenStandard: 'erc1155',
+      tokenStandard: tokens.erc1155.tokenStandard,
       currency: weth,
       price,
       expirationTime,
@@ -281,7 +309,7 @@ describe('x2y2', () => {
       isCollection: true,
       tokenAddress: tokens.erc1155.token,
       tokenId: '0',
-      tokenStandard: 'erc1155',
+      tokenStandard: tokens.erc1155.tokenStandard,
       currency: weth,
       price,
       expirationTime,
@@ -290,24 +318,36 @@ describe('x2y2', () => {
   })
 
   it('cancelOffer erc1155', async () => {
+    const offers = await getNftOffers(
+      network,
+      tokens.erc1155.token,
+      tokens.erc1155.tokenId,
+      'price',
+      'asc'
+    )
     await cancelOffer(
       {
         network,
         signer: seller,
-        orderId: 21,
+        orderId: offers[0].id,
       },
-      {
-        maxFeePerGas: ethers.utils.parseUnits('100', 'gwei'),
-      }
+      { maxFeePerGas }
     )
     await sleep(delayTxTime)
   })
 
   it('acceptOffer erc1155', async () => {
+    const offers = await getNftOffers(
+      network,
+      tokens.erc1155.token,
+      undefined,
+      'price',
+      'asc'
+    )
     await acceptOffer({
       network,
       signer: buyer,
-      orderId: 22,
+      offer: offers[0],
       tokenId: tokens.erc1155.tokenId,
     })
     await sleep(delayApiTime)

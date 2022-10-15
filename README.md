@@ -22,7 +22,7 @@ or
 npm install @x2y2-io/sdk --save
 ```
 
-### Initiating SDK
+### Initiate SDK
 
 Call `init` with your API Key and then initiate an `ethers.Signer` instance to interact with the user's wallet:
 
@@ -48,7 +48,7 @@ X2Y2 allows you to list items for sale and make WETH offers on others' items wit
 
 Once X2Y2 has the necessary approvals, you can list items for sale and make WETH offers by signing messages with your wallet. The SDK supports both of these functionalities and abstracts away the creation of signatures:
 
-### Making Offers / Collection Offers
+### Make Offers / Collection Offers
 
 Before making offers, the signer must `approve` WETH spending by the [X2Y2: Exchange contract](https://etherscan.io/address/0x74312363e45dcaba76c59ec49a7aa8a65a67eed3).
 
@@ -72,7 +72,7 @@ At present X2Y2 only supports making offers in WETH.
 
 To make a collection offer, set `isCollection` to `true` and `tokenId` to an empty string.
 
-### Creating Listings (Orders)
+### Create Listings (Orders)
 
 Before creating listings, the signer must approve the item's transfer by the [X2Y2: ERC 721 Delegate contract](https://etherscan.io/address/0xF849de01B080aDC3A814FaBE1E2087475cF2E354) with the `setApprovalForAll` function on the item's contract.
 
@@ -86,17 +86,19 @@ await list({
   tokenId, // string, token ID of the NFT
   tokenStandard, // 'erc721' | 'erc1155'
   price, // string, sale price in wei eg. '1000000000000000000' for 1 ETH
+  royalty, // optional, number, royalty fee. This parameter is only available for a small group of API Keys at the moment.
+  // The number can’t be larger than the royalty fee rate set by the collection owner. Base rate is 10^6. For example 50000 means 5% in royalty fee. Collection's royalty fee rate can be obtained via the Public API /v1/contracts/{contract}
   expirationTime, // number, the unix timestamp when the listing will expire, in seconds. Must be at least 15 minutes later in the future.
 })
 ```
 
-## Other Methods
+## Gas-cost Methods
 
 You can think of the gasless methods previously described as "making" new offers or listings. This SDK also supports "taking" existings offers and listings: in other words, buying items that are already listed or accepting offers you have received. It also supports cancelling or modifying previous offers/listings.
 
-For each of these interactions, the signer must send a transaction. The following methods all return the sent transaction as an ethers [TransactionResponse](https://docs.ethers.io/v5/api/providers/types/#providers-TransactionResponse)).
+For each of these interactions, the signer must commit a transaction. The following methods all return the sent transaction as an ethers [TransactionResponse](https://docs.ethers.io/v5/api/providers/types/#providers-TransactionResponse)).
 
-### Buying
+### Buy
 
 To purchase a listed item, call the `buyOrder` method:
 
@@ -112,6 +114,9 @@ await buyOrder({
   network,
   signer: buyer, // Signer of the buyer
   order: orders[0], // Pass in the order you choose to buy from above.
+  payback, // optional, number, the percentage of royalty that the buyer refuse to pay (which would be paid back to the buyer). For example, 0 means pay full royalty to the collection owner/artist.
+  // This parameter is only available for a small group of API Keys at the moment.
+  // The number can't be larger than the royalty_fee set by the seller, which could be obtained in the order's data. Base rate is 10^6. For example 50000 means 5%
 })
 ```
 

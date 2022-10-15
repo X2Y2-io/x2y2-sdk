@@ -26,6 +26,7 @@ export type Order = {
   id: number
   price: string
   taker: string | null
+  royalty_fee: number
 }
 
 export type X2Y2OrderItem = {
