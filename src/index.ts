@@ -39,7 +39,7 @@ export type ListPayload = {
   tokenId: string
   tokenStandard?: TokenStandard
   price: string
-  royalty: number
+  royalty?: number | undefined
   expirationTime: number
 }
 

@@ -62,7 +62,7 @@ export class APIClient {
 
   async _postX2Y2Order(
     order: X2Y2Order,
-    royalty: number,
+    royalty: number | undefined,
     isCollection: boolean
   ) {
     return await this._post('/api/orders/add', {
@@ -71,7 +71,7 @@ export class APIClient {
       bundleName: '',
       bundleDesc: '',
       orderIds: [],
-      royalties: [royalty],
+      royalties: royalty ? [royalty] : [],
       changePrice: false,
       isCollection,
       isPrivate: false,
@@ -79,12 +79,12 @@ export class APIClient {
     })
   }
 
-  async postSellOrder(order: X2Y2Order, royalty: number) {
+  async postSellOrder(order: X2Y2Order, royalty: number | undefined) {
     return await this._postX2Y2Order(order, royalty, false)
   }
 
   async postBuyOffer(order: X2Y2Order, isCollection: boolean) {
-    return await this._postX2Y2Order(order, 0, isCollection)
+    return await this._postX2Y2Order(order, undefined, isCollection)
   }
 
   async postLowerPrice(order: X2Y2Order, orderId: number, royalty: number) {
