@@ -331,7 +331,6 @@ async function acceptOrder(
   royalty: number | undefined,
   payback: number | undefined,
   tokenId: string,
-  check: boolean,
   callOverrides: ethers.Overrides = {}
 ) {
   const apiClient: APIClient = getSharedAPIClient(network)
@@ -345,8 +344,7 @@ async function acceptOrder(
     price,
     royalty,
     payback,
-    tokenId,
-    check
+    tokenId
   )
   // check
   let value: BigNumber = ethers.constants.Zero
@@ -411,7 +409,6 @@ export async function buy(
     undefined,
     undefined,
     '',
-    true,
     callOverrides
   )
 }
@@ -448,7 +445,6 @@ export async function buyOrder(
     order.royalty_fee,
     payback,
     '',
-    true,
     callOverrides
   )
 }
@@ -555,7 +551,6 @@ export async function acceptOffer(
     undefined,
     undefined,
     tokenId ?? '',
-    true,
     callOverrides
   )
 }

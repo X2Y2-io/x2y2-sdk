@@ -189,8 +189,7 @@ export class APIClient {
     price: string,
     royalty: number | undefined,
     payback: number | undefined,
-    tokenId: string,
-    check: boolean
+    tokenId: string
   ): Promise<RunInput | undefined> {
     const { data } = await this._post('/api/orders/sign', {
       caller,
@@ -198,7 +197,7 @@ export class APIClient {
       amountToEth: '0',
       amountToWeth: '0',
       items: [{ orderId, currency, price, tokenId, royalty, payback }],
-      check,
+      check: true, // set false to skip nft ownership check
     })
     const inputData = (data ?? []) as { order_id: number; input: string }[]
     const input = inputData.find(d => d.order_id === orderId)
