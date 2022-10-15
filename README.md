@@ -31,9 +31,9 @@ import { Signer } from 'ethers'
 import { ethersWallet, init } from '@x2y2-io/sdk'
 import { Network } from '@x2y2-io/sdk/dist/network'
 
-init(YOUR_API_KEY)
-
 const network: Network = Network.Mainnet
+init(YOUR_API_KEY, network)
+
 const signer: Signer = ethersWallet(WALLET_PRIVATE_KEY, network)
 ```
 
