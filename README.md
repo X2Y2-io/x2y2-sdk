@@ -22,7 +22,7 @@ or
 npm install @x2y2-io/sdk --save
 ```
 
-### Initiating SDK
+### Initiate SDK
 
 Call `init` with your API Key and then initiate an `ethers.Signer` instance to interact with the user's wallet:
 
@@ -48,7 +48,7 @@ X2Y2 allows you to list items for sale and make WETH offers on others' items wit
 
 Once X2Y2 has the necessary approvals, you can list items for sale and make WETH offers by signing messages with your wallet. The SDK supports both of these functionalities and abstracts away the creation of signatures:
 
-### Making Offers / Collection Offers
+### Make Offers / Collection Offers
 
 Before making offers, the signer must `approve` WETH spending by the [X2Y2: Exchange contract](https://etherscan.io/address/0x74312363e45dcaba76c59ec49a7aa8a65a67eed3).
 
@@ -72,7 +72,7 @@ At present X2Y2 only supports making offers in WETH.
 
 To make a collection offer, set `isCollection` to `true` and `tokenId` to an empty string.
 
-### Creating Listings (Orders)
+### Create Listings (Orders)
 
 Before creating listings, the signer must approve the item's transfer by the [X2Y2: ERC 721 Delegate contract](https://etherscan.io/address/0xF849de01B080aDC3A814FaBE1E2087475cF2E354) with the `setApprovalForAll` function on the item's contract.
 
@@ -98,7 +98,7 @@ You can think of the gasless methods previously described as "making" new offers
 
 For each of these interactions, the signer must send a transaction. The following methods all return the sent transaction as an ethers [TransactionResponse](https://docs.ethers.io/v5/api/providers/types/#providers-TransactionResponse)).
 
-### Buying
+### Buy
 
 To purchase a listed item, call the `buyOrder` method:
 
