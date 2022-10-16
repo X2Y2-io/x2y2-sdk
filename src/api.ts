@@ -71,7 +71,7 @@ export class APIClient {
       bundleName: '',
       bundleDesc: '',
       orderIds: [],
-      royalties: royalty ? [royalty] : [],
+      royalties: royalty !== undefined ? [royalty] : [],
       changePrice: false,
       isCollection,
       isPrivate: false,
