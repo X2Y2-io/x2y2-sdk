@@ -225,6 +225,9 @@ await acceptOffer({
 | 1006       | User banned from listing(rug/hacker address)                 |
 | 2012       | A listing order for the NFT already exists                   |
 | 2014       | WETH balance not enough                                      |
+| 2015       | Seller no longer owns the NFT                                |
+| 2016       | Seller revoked the approval of the NFT                       |
+| 2017       | The collection has disabled optional royalty                 |
 | 2020       | Order already cancelled                                      |
 | 2021       | Order already purchased                                      |
 | 2028       | Contract/NFT is not allowed to trade(rug or hacked NFT)      |
