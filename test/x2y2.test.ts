@@ -1,6 +1,7 @@
 import { constants, ethers, Signer } from 'ethers'
 import {
   acceptOffer,
+  bulkList,
   buyOrder,
   cancel,
   cancelList,
@@ -146,14 +147,38 @@ describe('x2y2', () => {
     await sleep(delayTxTime)
   })
 
+  it('cancelList erc1155', async () => {
+    const maker = await seller.getAddress()
+    const orders = await getSellOrders(
+      network,
+      maker,
+      tokens.erc1155.token,
+      tokens.erc1155.tokenId
+    )
+    await cancel(
+      {
+        network,
+        signer: seller,
+        order: orders[0],
+      },
+      { maxFeePerGas }
+    )
+    await sleep(delayTxTime)
+  })
+
   it('buy erc721', async () => {
-    await list({
+    await bulkList({
       network,
       signer: seller,
-      tokenAddress: tokens.erc721.token,
-      tokenId: tokens.erc721.tokenId,
-      price,
-      royalty: 7500,
+      items: [
+        {
+          tokenAddress: tokens.erc721.token,
+          tokenId: tokens.erc721.tokenId,
+          price,
+        },
+      ],
+      tokenStandard: tokens.erc721.tokenStandard,
+      sellerRoyalty: 'flex', // Let buyer decide
       expirationTime,
     })
     await sleep(delayApiTime)
@@ -174,34 +199,19 @@ describe('x2y2', () => {
     await sleep(delayTxTime)
   })
 
-  it('cancelList erc1155', async () => {
-    const maker = await seller.getAddress()
-    const orders = await getSellOrders(
-      network,
-      maker,
-      tokens.erc1155.token,
-      tokens.erc1155.tokenId
-    )
-    await cancel(
-      {
-        network,
-        signer: seller,
-        order: orders[0],
-      },
-      { maxFeePerGas }
-    )
-    await sleep(delayTxTime)
-  })
-
   it('buy erc1155', async () => {
-    await list({
+    await bulkList({
       network,
       signer: seller,
-      tokenAddress: tokens.erc1155.token,
-      tokenId: tokens.erc1155.tokenId,
+      items: [
+        {
+          tokenAddress: tokens.erc1155.token,
+          tokenId: tokens.erc1155.tokenId,
+          price,
+        },
+      ],
       tokenStandard: tokens.erc1155.tokenStandard,
-      price,
-      royalty: 0,
+      sellerRoyalty: 'zero', // 0
       expirationTime,
     })
     await sleep(delayApiTime)
