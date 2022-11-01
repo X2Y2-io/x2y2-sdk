@@ -7,7 +7,14 @@ import {
   X2Y2R1__factory,
 } from './contracts'
 import { getNetworkMeta, Network } from './network'
-import { CancelInput, Order, RunInput, TokenStandard, X2Y2Order } from './types'
+import {
+  CancelInput,
+  Order,
+  RunInput,
+  SellerRoyalty,
+  TokenStandard,
+  X2Y2Order,
+} from './types'
 import {
   encodeItemData,
   randomSalt,
@@ -30,6 +37,16 @@ export const OP_REFUND_AUCTION_STUCK_ITEM = 7 // REFUND_AUCTION_STUCK_ITEM
 export const DELEGATION_TYPE_INVALID = 0
 export const DELEGATION_TYPE_ERC721 = 1
 export const DELEGATION_TYPE_ERC1155 = 2
+
+export type BulkListPayload = {
+  network: Network
+  signer: ethers.Signer
+
+  items: { tokenAddress: string; tokenId: string; price: string }[]
+  tokenStandard?: TokenStandard
+  sellerRoyalty: SellerRoyalty
+  expirationTime: number
+}
 
 export type ListPayload = {
   network: Network
@@ -190,6 +207,81 @@ function makeSellOrder(
   }
 }
 
+async function checkApproved(
+  network: Network,
+  signer: ethers.Signer,
+  tokenStandard: TokenStandard,
+  contracts: string[]
+): Promise<boolean> {
+  const accountAddress = await signer.getAddress()
+  const checkContracts = contracts.reduce((r, c: string) => {
+    if (!r.includes(c)) r.push(c)
+    return r
+  }, [] as string[])
+
+  const networkMeta = getNetworkMeta(network)
+  const delegateContract =
+    tokenStandard === 'erc1155'
+      ? networkMeta.erc1155DelegateContract
+      : networkMeta.erc721DelegateContract
+  const approved = await Promise.all(
+    checkContracts.map(address => {
+      const contract =
+        tokenStandard === 'erc1155'
+          ? ERC1155__factory.connect(address, signer)
+          : ERC721__factory.connect(address, signer)
+      return contract.isApprovedForAll(accountAddress, delegateContract)
+    })
+  )
+  return approved.reduce((r, c) => r && c, true)
+}
+
+export async function bulkList({
+  network,
+  signer,
+
+  items,
+  tokenStandard,
+  sellerRoyalty,
+  expirationTime,
+}: BulkListPayload): Promise<void> {
+  if (items.length > 20) {
+    throw new Error('Too many items.')
+  }
+  const ts = tokenStandard ?? 'erc721'
+  const approved = await checkApproved(
+    network,
+    signer,
+    ts,
+    items.map(item => item.tokenAddress)
+  )
+  if (!approved) {
+    throw new Error('The NFT has not been approved yet.')
+  }
+
+  const accountAddress = await signer.getAddress()
+  const order: X2Y2Order = makeSellOrder(
+    network,
+    accountAddress,
+    expirationTime,
+    items.map(item => ({
+      price: item.price,
+      data: encodeItemData([
+        {
+          token: item.tokenAddress,
+          tokenId: item.tokenId,
+          amount: 1,
+          tokenStandard: ts,
+        },
+      ]),
+    })),
+    tokenStandard
+  )
+  const royalties = items.map(_ => (sellerRoyalty === 'zero' ? 0 : null))
+  await signSellOrder(signer, order)
+  await getSharedAPIClient(network).bulkListOrder(order, royalties)
+}
+
 export async function list({
   network,
   signer,
@@ -201,25 +293,13 @@ export async function list({
   royalty,
   expirationTime,
 }: ListPayload): Promise<void> {
-  const accountAddress = await signer.getAddress()
-
-  const networkMeta = getNetworkMeta(network)
-  const delegateContract =
-    tokenStandard === 'erc1155'
-      ? networkMeta.erc1155DelegateContract
-      : networkMeta.erc721DelegateContract
-  const contract =
-    tokenStandard === 'erc1155'
-      ? ERC1155__factory.connect(tokenAddress, signer)
-      : ERC721__factory.connect(tokenAddress, signer)
-  const approved = await contract.isApprovedForAll(
-    accountAddress,
-    delegateContract
-  )
+  const ts = tokenStandard ?? 'erc721'
+  const approved = await checkApproved(network, signer, ts, [tokenAddress])
   if (!approved) {
     throw new Error('The NFT has not been approved yet.')
   }
 
+  const accountAddress = await signer.getAddress()
   const data = encodeItemData([
     {
       token: tokenAddress,
