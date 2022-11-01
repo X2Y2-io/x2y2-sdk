@@ -1,6 +1,6 @@
 import axios, { Axios, AxiosResponse } from 'axios'
 import { getNetworkMeta, Network } from './network'
-import { CancelInput, Order, RunInput, SellerRoyalty, X2Y2Order } from './types'
+import { CancelInput, Order, RunInput, X2Y2Order } from './types'
 import { decodeCancelInput, decodeRunInput, encodeOrder } from './utils'
 
 export class APIClient {
