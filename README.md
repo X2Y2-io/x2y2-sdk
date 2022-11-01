@@ -93,6 +93,32 @@ await list({
 })
 ```
 
+### Bulk Listings (Orders)
+
+You can create no more than 20 listings at once using the SDK.
+
+Before creating listings, the signer must approve all items' transfer by the [X2Y2: ERC 721 Delegate contract](https://etherscan.io/address/0xF849de01B080aDC3A814FaBE1E2087475cF2E354) with the `setApprovalForAll` function on each item's contract.
+
+To submit multiple fixed-price listings(orders), call the `bulkList` method:
+
+```JavaScript
+await bulkList({
+  network,
+  signer: seller, // Signer of the seller
+  items: [  // Arrays of each token and price
+    {
+      tokenAddress: tokens.erc1155.token, // string, contract address of NFT collection
+      tokenId: tokens.erc1155.tokenId, // string, token ID of the NFT
+      price, // string, sale price in wei eg. '1000000000000000000' for 1 ETH
+    },
+    ... // other items
+  ],
+  tokenStandard, // 'erc721' | 'erc1155', all tokens in one request have to be the same type
+  sellerRoyalty, // 'flex': Let buyer decide, 'zero': Zero royalty
+  expirationTime, // number, the unix timestamp when the listing will expire, in seconds. Must be at least 15 minutes later in the future.
+})
+```
+
 ## Gas-cost Methods
 
 You can think of the gasless methods previously described as "making" new offers or listings. This SDK also supports "taking" existings offers and listings: in other words, buying items that are already listed or accepting offers you have received. It also supports cancelling or modifying previous offers/listings.
