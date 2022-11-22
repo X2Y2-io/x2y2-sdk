@@ -1,8 +1,8 @@
-# X2Y2 SDK
+# X2Y2 SDK FOR TRADERS
 
-This SDK is a JavaScript library for buying and selling on X2Y2, so you don't need to interact with the X2Y2 API and smart contracts directly.
+This SDK is a Node.js library for dedicated for **pro traders** to buy and sell on X2Y2, so you don't need to interact with the X2Y2 API and smart contracts directly. It's designed to be used on **desktop or server side**, with your own wallet private key.
 
-If you just want to get information about open offers and orders on X2Y2, or see sales and other events that have taken place, [call the API directly](https://docs.x2y2.io/developers/api).
+To fetch latest open offers and orders on X2Y2, you still need to use to [call the marketplace API](https://x2y2.readme.io/reference/introduction).
 
 ## Getting Started
 
