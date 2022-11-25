@@ -251,13 +251,13 @@ await acceptOffer({
 | 1006       | User banned from listing(rug/hacker address)                 |
 | 2012       | A listing order for the NFT already exists                   |
 | 2014       | WETH balance not enough                                      |
-| 2015       | Seller no longer owns the NFT                                |
-| 2016       | Seller revoked the approval of the NFT                       |
-| 2017       | The collection has disabled optional royalty                 |
+| 2015       | NFT balance not enough                                       |
+| 2016       | Contract not approved                                        |
 | 2020       | Order already cancelled                                      |
 | 2021       | Order already purchased                                      |
 | 2028       | Contract/NFT is not allowed to trade(rug or hacked NFT)      |
 | 2030       | Order already expired                                        |
+| 2031       | Offer already expired                                        |
 | 3002       | Signature error                                              |
 | 3004       | Wrong currency(currently only ETH supported for sell orders) |
 | 3007       | Invalid API key                                              |
