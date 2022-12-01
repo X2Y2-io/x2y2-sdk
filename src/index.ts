@@ -7,14 +7,7 @@ import {
   X2Y2R1__factory,
 } from './contracts'
 import { getNetworkMeta, Network } from './network'
-import {
-  CancelInput,
-  Order,
-  RunInput,
-  SellerRoyalty,
-  TokenStandard,
-  X2Y2Order,
-} from './types'
+import { CancelInput, Order, RunInput, TokenStandard, X2Y2Order } from './types'
 import {
   encodeItemData,
   randomSalt,
@@ -44,7 +37,6 @@ export type BulkListPayload = {
 
   items: { tokenAddress: string; tokenId: string; price: string }[]
   tokenStandard?: TokenStandard
-  sellerRoyalty: SellerRoyalty
   expirationTime: number
 }
 
@@ -56,7 +48,6 @@ export type ListPayload = {
   tokenId: string
   tokenStandard?: TokenStandard
   price: string
-  royalty?: number | undefined
   expirationTime: number
 }
 
@@ -89,7 +80,6 @@ export type BuyOrderPayload = {
   signer: ethers.Signer
 
   order: Order
-  payback?: number | undefined
 }
 
 export type OfferPayload = {
@@ -242,7 +232,6 @@ export async function bulkList({
 
   items,
   tokenStandard,
-  sellerRoyalty,
   expirationTime,
 }: BulkListPayload): Promise<void> {
   if (items.length > 20) {
@@ -277,9 +266,8 @@ export async function bulkList({
     })),
     tokenStandard
   )
-  const royalties = items.map(_ => (sellerRoyalty === 'zero' ? 0 : null))
   await signSellOrder(signer, order)
-  await getSharedAPIClient(network).bulkListOrder(order, royalties)
+  await getSharedAPIClient(network).bulkListOrder(order)
 }
 
 export async function list({
@@ -290,7 +278,6 @@ export async function list({
   tokenId,
   tokenStandard,
   price,
-  royalty,
   expirationTime,
 }: ListPayload): Promise<void> {
   const ts = tokenStandard ?? 'erc721'
@@ -316,7 +303,7 @@ export async function list({
     tokenStandard
   )
   await signSellOrder(signer, order)
-  await getSharedAPIClient(network).postSellOrder(order, royalty)
+  await getSharedAPIClient(network).postSellOrder(order)
 }
 
 async function cancelOrder(
@@ -408,8 +395,6 @@ async function acceptOrder(
   orderId: number,
   currency: string,
   price: string,
-  royalty: number | undefined,
-  payback: number | undefined,
   tokenId: string,
   callOverrides: ethers.Overrides = {}
 ) {
@@ -422,8 +407,6 @@ async function acceptOrder(
     orderId,
     currency,
     price,
-    royalty,
-    payback,
     tokenId
   )
   // check
@@ -486,8 +469,6 @@ export async function buy(
     order.id,
     order.currency,
     order.price,
-    undefined,
-    undefined,
     '',
     callOverrides
   )
@@ -499,7 +480,6 @@ export async function buyOrder(
     signer,
 
     order,
-    payback,
   }: BuyOrderPayload,
   callOverrides: ethers.Overrides = {}
 ) {
@@ -511,9 +491,6 @@ export async function buyOrder(
   ) {
     throw new Error('Invalid Order')
   }
-  if (payback && payback > order.royalty_fee) {
-    throw new Error(`Payback can't be greater than royalty fee.`)
-  }
 
   return await acceptOrder(
     network,
@@ -522,8 +499,6 @@ export async function buyOrder(
     order.id,
     order.currency,
     order.price,
-    order.royalty_fee,
-    payback,
     '',
     callOverrides
   )
@@ -628,8 +603,6 @@ export async function acceptOffer(
     offer.id,
     offer.currency,
     offer.price,
-    undefined,
-    undefined,
     tokenId ?? '',
     callOverrides
   )
@@ -679,7 +652,7 @@ export async function lowerPrice({
     tokenStandard
   )
   await signSellOrder(signer, order)
-  await apiClient.postLowerPrice(order, list.id, list.royalty_fee)
+  await apiClient.postLowerPrice(order, list.id)
 }
 
 export async function lowerOrderPrice({
@@ -717,5 +690,5 @@ export async function lowerOrderPrice({
     tokenStandard
   )
   await signSellOrder(signer, sellOrder)
-  await apiClient.postLowerPrice(sellOrder, order.id, order.royalty_fee)
+  await apiClient.postLowerPrice(sellOrder, order.id)
 }
