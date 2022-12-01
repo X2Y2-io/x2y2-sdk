@@ -63,7 +63,6 @@ export class APIClient {
   async _postX2Y2Order(
     order: X2Y2Order,
     orderIds: number[],
-    royalties: (number | null)[],
     changePrice: boolean,
     isCollection: boolean
   ) {
@@ -73,7 +72,7 @@ export class APIClient {
       bundleName: '',
       bundleDesc: '',
       orderIds,
-      royalties,
+      royalties: [],
       changePrice,
       isCollection,
       isPrivate: false,
@@ -81,21 +80,20 @@ export class APIClient {
     })
   }
 
-  async postSellOrder(order: X2Y2Order, royalty: number | undefined) {
-    const royalties = royalty !== undefined ? [royalty] : []
-    return await this._postX2Y2Order(order, [], royalties, false, false)
+  async postSellOrder(order: X2Y2Order) {
+    return await this._postX2Y2Order(order, [], false, false)
   }
 
   async postBuyOffer(order: X2Y2Order, isCollection: boolean) {
-    return await this._postX2Y2Order(order, [], [], false, isCollection)
+    return await this._postX2Y2Order(order, [], false, isCollection)
   }
 
-  async postLowerPrice(order: X2Y2Order, orderId: number, royalty: number) {
-    return await this._postX2Y2Order(order, [orderId], [royalty], true, false)
+  async postLowerPrice(order: X2Y2Order, orderId: number) {
+    return await this._postX2Y2Order(order, [orderId], true, false)
   }
 
-  async bulkListOrder(order: X2Y2Order, royalties: (number | null)[]) {
-    return await this._postX2Y2Order(order, [], royalties, false, false)
+  async bulkListOrder(order: X2Y2Order) {
+    return await this._postX2Y2Order(order, [], false, false)
   }
 
   async getSellOrder(
@@ -183,8 +181,6 @@ export class APIClient {
     orderId: number,
     currency: string,
     price: string,
-    royalty: number | undefined,
-    payback: number | undefined,
     tokenId: string
   ): Promise<RunInput | undefined> {
     const { data } = await this._post('/api/orders/sign', {
@@ -192,7 +188,7 @@ export class APIClient {
       op,
       amountToEth: '0',
       amountToWeth: '0',
-      items: [{ orderId, currency, price, tokenId, royalty, payback }],
+      items: [{ orderId, currency, price, tokenId }],
       check: true, // set false to skip nft ownership check
     })
     const inputData = (data ?? []) as { order_id: number; input: string }[]

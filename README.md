@@ -86,9 +86,6 @@ await list({
   tokenId, // string, token ID of the NFT
   tokenStandard, // 'erc721' | 'erc1155'
   price, // string, sale price in wei eg. '1000000000000000000' for 1 ETH
-  royalty, // number, percentage with a base of 10^6, optional, eg. 50000 = 5%,
-           // The number can’t be larger than the royalty fee rate set by the collection owner.
-           // A collection's royalty rate can be obtained via the Public API /v1/contracts/{contract}
   expirationTime, // number, the unix timestamp when the listing will expire, in seconds. Must be at least 15 minutes later in the future.
 })
 ```
@@ -114,7 +111,6 @@ await bulkList({
     ... // other items
   ],
   tokenStandard, // 'erc721' | 'erc1155', all tokens in one request have to be the same type
-  sellerRoyalty, // 'flex': Let buyer decide, 'zero': Zero royalty
   expirationTime, // number, the unix timestamp when the listing will expire, in seconds. Must be at least 15 minutes later in the future.
 })
 ```
@@ -141,10 +137,6 @@ await buyOrder({
   network,
   signer: buyer, // Signer of the buyer
   order: orders[0], // Pass in the order you choose to buy from above.
-  payback, // number, percentage of royalty that route back to the buyer
-           // the base of `payback` is 10^6, optional, eg. 50000 = 5%, 0 = pay 100% royalty
-           // The number can’t be larger than the royalty fee rate set by the collection owner.
-           // A collection's royalty rate can be obtained via the Public API /v1/contracts/{contract}
 })
 ```
 

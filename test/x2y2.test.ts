@@ -53,8 +53,8 @@ describe('x2y2', () => {
   const newPrice: string = '1800000000000000'
   const expirationTime: number =
     Math.round(Date.now() / 1000) + 30 * 24 * 60 * 60
-  const delayApiTime = 6000
-  const delayTxTime = 60000
+  const delayApiTime = 10 * 1000
+  const delayTxTime = 100 * 1000
   const maxFeePerGas = ethers.utils.parseUnits('100', 'gwei')
 
   const sleep = (msec: number) =>
@@ -76,7 +76,6 @@ describe('x2y2', () => {
       tokenId: tokens.erc721.tokenId,
       tokenStandard: tokens.erc721.tokenStandard,
       price,
-      royalty: 0,
       expirationTime,
     })
     await sleep(delayApiTime)
@@ -109,7 +108,6 @@ describe('x2y2', () => {
       tokenId: tokens.erc1155.tokenId,
       tokenStandard: tokens.erc1155.tokenStandard,
       price,
-      royalty: 0,
       expirationTime,
     })
     await sleep(delayApiTime)
@@ -178,7 +176,6 @@ describe('x2y2', () => {
         },
       ],
       tokenStandard: tokens.erc721.tokenStandard,
-      sellerRoyalty: 'flex', // Let buyer decide
       expirationTime,
     })
     await sleep(delayApiTime)
@@ -194,7 +191,6 @@ describe('x2y2', () => {
       network,
       signer: buyer,
       order: order,
-      payback: order.royalty_fee / 2,
     })
     await sleep(delayTxTime)
   })
@@ -211,7 +207,6 @@ describe('x2y2', () => {
         },
       ],
       tokenStandard: tokens.erc1155.tokenStandard,
-      sellerRoyalty: 'zero', // 0
       expirationTime,
     })
     await sleep(delayApiTime)
@@ -266,8 +261,8 @@ describe('x2y2', () => {
       network,
       tokens.erc721.token,
       tokens.erc721.tokenId,
-      'price',
-      'asc'
+      'created_at',
+      'desc'
     )
     await cancelOffer(
       {
@@ -285,8 +280,8 @@ describe('x2y2', () => {
       network,
       tokens.erc721.token,
       undefined,
-      'price',
-      'asc'
+      'created_at',
+      'desc'
     )
     await acceptOffer({
       network,
@@ -332,8 +327,8 @@ describe('x2y2', () => {
       network,
       tokens.erc1155.token,
       tokens.erc1155.tokenId,
-      'price',
-      'asc'
+      'created_at',
+      'desc'
     )
     await cancelOffer(
       {
@@ -351,8 +346,8 @@ describe('x2y2', () => {
       network,
       tokens.erc1155.token,
       undefined,
-      'price',
-      'asc'
+      'created_at',
+      'desc'
     )
     await acceptOffer({
       network,
