@@ -1,5 +1,5 @@
 {
-  "version": "0.3.1",
+  "version": "0.3.2",
   "license": "MIT",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -34,14 +34,14 @@
   },
   "name": "@x2y2-io/sdk",
   "author": "x2y2",
-  "module": "dist/x2y2-sdk.esm.js",
+  "module": "dist/sdk.esm.js",
   "size-limit": [
     {
-      "path": "dist/x2y2-sdk.cjs.production.min.js",
+      "path": "dist/sdk.cjs.production.min.js",
       "limit": "10 KB"
     },
     {
-      "path": "dist/x2y2-sdk.esm.js",
+      "path": "dist/sdk.esm.js",
       "limit": "10 KB"
     }
   ],
